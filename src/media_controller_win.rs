@@ -60,11 +60,11 @@ impl MediaController {
         Ok(())
     }
 
-    pub fn media_get_titile(&self) -> Result<String, MediaControllerError> {
-        block_on(self._media_get_titile())
+    pub fn media_get_title(&self) -> Result<String, MediaControllerError> {
+        block_on(self._media_get_title())
     }
 
-    async fn _media_get_titile(&self) -> Result<String, MediaControllerError> {
+    async fn _media_get_title(&self) -> Result<String, MediaControllerError> {
         let session_manager =
             Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
                 .unwrap()

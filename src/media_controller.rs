@@ -72,7 +72,7 @@ impl MediaController {
         Ok(())
     }
 
-    pub fn media_get_titile(&self) -> Result<String, MediaControllerError> {
+    pub fn media_get_title(&self) -> Result<String, MediaControllerError> {
         let player: mpris::Player =
             self.player
                 .find_active()
