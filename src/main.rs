@@ -1,4 +1,4 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use os_mediamote::media_controller;
 
 struct AppState {
@@ -7,11 +7,14 @@ struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
+
     HttpServer::new(|| {
         App::new()
             .app_data(web::Data::new(AppState {
                 mc: media_controller::MediaController::new().unwrap(),
             }))
+            .wrap(Logger::default())
             .service(pause)
             .service(play)
             .service(play_pause)
