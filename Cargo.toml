@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+actix-web = "4.9.0"
+
 [target.'cfg(not(target_os="windows"))'.dependencies]
 mpris = "2.0.1"
 
