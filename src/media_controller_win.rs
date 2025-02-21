@@ -28,7 +28,7 @@ impl MediaController {
         Ok(())
     }
 
-    pub async fn media_play(&self) -> Result<(), MediaControllerError> {
+    pub fn media_play(&self) -> Result<(), MediaControllerError> {
         block_on(self._media_play())
     }
 
