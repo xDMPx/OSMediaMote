@@ -49,23 +49,31 @@ async fn play_pause(data: web::Data<AppState>) -> impl Responder {
 #[get("/title")]
 async fn title(data: web::Data<AppState>) -> impl Responder {
     let title = data.mc.media_get_title().unwrap();
-    HttpResponse::Ok().body(title)
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(title)
 }
 
 #[get("/duration")]
 async fn duration(data: web::Data<AppState>) -> impl Responder {
     let duration = data.mc.media_get_duration().unwrap();
-    HttpResponse::Ok().body(format!("{duration}"))
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(format!("{duration}"))
 }
 
 #[get("/position")]
 async fn position(data: web::Data<AppState>) -> impl Responder {
     let position = data.mc.media_get_position().unwrap();
-    HttpResponse::Ok().body(format!("{position}"))
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(format!("{position}"))
 }
 
 #[get("/is_playing")]
 async fn is_playing(data: web::Data<AppState>) -> impl Responder {
     let is_playing = data.mc.media_is_playing().unwrap();
-    HttpResponse::Ok().body(format!("{is_playing}"))
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(format!("{is_playing}"))
 }
