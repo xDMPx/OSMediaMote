@@ -60,6 +60,41 @@ impl MediaController {
         Ok(())
     }
 
+    pub fn media_play_next(&self) -> Result<(), MediaControllerError> {
+        let dur = block_on(self._media_get_duration())?;
+        block_on(self._media_play_next(dur))
+    }
+
+    async fn _media_play_next(&self, duration: f32) -> Result<(), MediaControllerError> {
+        let session_manager =
+            Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+                .unwrap()
+                .await
+                .unwrap();
+        let session = session_manager.GetCurrentSession().unwrap();
+
+        session.TrySkipNextAsync().unwrap().await.unwrap();
+        let possition = (duration-2.0) as i64;
+        session.TryChangePlaybackPositionAsync(possition*10_000_000).unwrap().await.unwrap();
+        Ok(())
+    }
+
+    pub fn media_play_prev(&self) -> Result<(), MediaControllerError> {
+        block_on(self._media_play_prev())
+    }
+
+    async fn _media_play_prev(&self) -> Result<(), MediaControllerError> {
+        let session_manager =
+            Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+                .unwrap()
+                .await
+                .unwrap();
+        let session = session_manager.GetCurrentSession().unwrap();
+
+        session.TrySkipPreviousAsync().unwrap().await.unwrap();
+        Ok(())
+    }
+
     pub fn media_get_title(&self) -> Result<String, MediaControllerError> {
         block_on(self._media_get_title())
     }

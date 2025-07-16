@@ -154,4 +154,55 @@ impl MediaController {
             Ok(false)
         }
     }
+
+    pub fn media_play_next(&self) -> Result<(), MediaControllerError> {
+        let player: mpris::Player =
+            self.player
+                .find_active()
+                .map_err(|e| MediaControllerError {
+                    finding_error: Some(e),
+                    dbus_error: None,
+                })?;
+
+        let metadata = player.get_metadata().map_err(|e| MediaControllerError {
+            dbus_error: Some(e),
+            finding_error: None,
+        })?;
+
+        let duration = metadata
+            .length()
+            .unwrap_or(std::time::Duration::new(0, 0))
+            .as_secs();
+
+        //TODO: corectly handle lack of track_id
+        let track_id = metadata.track_id().unwrap();
+
+        player
+            .set_position(track_id, &(std::time::Duration::from_secs(duration - 2)))
+            .map_err(|e| MediaControllerError {
+                finding_error: None,
+                dbus_error: Some(e),
+            })?;
+
+        Ok(())
+    }
+
+    pub fn media_play_prev(&self) -> Result<(), MediaControllerError> {
+        let player: mpris::Player =
+            self.player
+                .find_active()
+                .map_err(|e| MediaControllerError {
+                    finding_error: Some(e),
+                    dbus_error: None,
+                })?;
+
+        player
+            .checked_previous()
+            .map_err(|e| MediaControllerError {
+                finding_error: None,
+                dbus_error: Some(e),
+            })?;
+
+        Ok(())
+    }
 }

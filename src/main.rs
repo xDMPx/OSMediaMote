@@ -18,6 +18,8 @@ async fn main() -> std::io::Result<()> {
             .service(pause)
             .service(play)
             .service(play_pause)
+            .service(play_next)
+            .service(play_prev)
             .service(title)
             .service(duration)
             .service(position)
@@ -43,6 +45,18 @@ async fn play(data: web::Data<AppState>) -> impl Responder {
 #[get("/play_pause")]
 async fn play_pause(data: web::Data<AppState>) -> impl Responder {
     data.mc.media_play_pause().unwrap();
+    HttpResponse::Ok()
+}
+
+#[get("/play_next")]
+async fn play_next(data: web::Data<AppState>) -> impl Responder {
+    data.mc.media_play_next().unwrap();
+    HttpResponse::Ok()
+}
+
+#[get("/play_prev")]
+async fn play_prev(data: web::Data<AppState>) -> impl Responder {
+    data.mc.media_play_prev().unwrap();
     HttpResponse::Ok()
 }
 
