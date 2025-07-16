@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -134,21 +135,38 @@ class MainActivity : ComponentActivity() {
 
             Text(title.value)
             Text("${position.value} / ${duration.value}")
-            IconButton(onClick = { requestPlayPause(ip) }, modifier = iconModifier) {
-                if (isPlaying.value) {
+            Row {
+                IconButton(onClick = { requestPlayPrev(ip) }, modifier = iconModifier) {
                     Icon(
-                        painterResource(R.drawable.round_pause_24),
+                        painterResource(R.drawable.rounded_skip_previous_24),
                         contentDescription = null,
-                        modifier = iconModifier,
+                        modifier = iconModifier
                     )
-                } else {
+                }
+                IconButton(onClick = { requestPlayPause(ip) }, modifier = iconModifier) {
+                    if (isPlaying.value) {
+                        Icon(
+                            painterResource(R.drawable.round_pause_24),
+                            contentDescription = null,
+                            modifier = iconModifier,
+                        )
+                    } else {
+                        Icon(
+                            painterResource(R.drawable.round_play_arrow_24),
+                            contentDescription = null,
+                            modifier = iconModifier,
+                        )
+                    }
+                }
+                IconButton(onClick = { requestPlayNext(ip) }, modifier = iconModifier) {
                     Icon(
-                        painterResource(R.drawable.round_play_arrow_24),
+                        painterResource(R.drawable.rounded_skip_next_24),
                         contentDescription = null,
-                        modifier = iconModifier,
+                        modifier = iconModifier
                     )
                 }
             }
+
         }
 
     }
@@ -213,7 +231,8 @@ class MainActivity : ComponentActivity() {
     private fun requestPause(ip: String) {
         val url = "http://${ip}:65420/pause"
 
-        val stringRequest = StringRequest(Request.Method.GET,
+        val stringRequest = StringRequest(
+            Request.Method.GET,
             url,
             { _ -> },
             { err -> Log.e("VolleyError:", "$url -> $err") })
@@ -224,7 +243,8 @@ class MainActivity : ComponentActivity() {
     private fun requestPlay(ip: String) {
         val url = "http://${ip}:65420/play"
 
-        val stringRequest = StringRequest(Request.Method.GET,
+        val stringRequest = StringRequest(
+            Request.Method.GET,
             url,
             { _ -> },
             { err -> Log.e("VolleyError:", "$url -> $err") })
@@ -235,7 +255,8 @@ class MainActivity : ComponentActivity() {
     private fun requestPlayPause(ip: String) {
         val url = "http://${ip}:65420/play_pause"
 
-        val stringRequest = StringRequest(Request.Method.GET,
+        val stringRequest = StringRequest(
+            Request.Method.GET,
             url,
             { _ -> },
             { err -> Log.e("VolleyError:", "$url -> $err") })
@@ -243,4 +264,27 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
+    private fun requestPlayNext(ip: String) {
+        val url = "http://${ip}:65420/play_next"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET,
+            url,
+            { _ -> },
+            { err -> Log.e("VolleyError:", "$url -> $err") })
+
+        volleyQueue.add(stringRequest)
+    }
+
+    private fun requestPlayPrev(ip: String) {
+        val url = "http://${ip}:65420/play_prev"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET,
+            url,
+            { _ -> },
+            { err -> Log.e("VolleyError:", "$url -> $err") })
+
+        volleyQueue.add(stringRequest)
+    }
 }
