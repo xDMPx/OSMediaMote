@@ -94,6 +94,28 @@ impl MediaController {
         Ok(title)
     }
 
+    pub fn media_get_art(&self) -> Result<String, MediaControllerError> {
+        let player: mpris::Player =
+            self.player
+                .find_active()
+                .map_err(|e| MediaControllerError {
+                    finding_error: Some(e),
+                    dbus_error: None,
+                })?;
+
+        let art_url = player
+            .get_metadata()
+            .map_err(|e| MediaControllerError {
+                dbus_error: Some(e),
+                finding_error: None,
+            })?
+            .art_url()
+            .unwrap_or("")
+            .to_owned();
+
+        Ok(art_url)
+    }
+
     pub fn media_get_duration(&self) -> Result<f32, MediaControllerError> {
         let player: mpris::Player =
             self.player
