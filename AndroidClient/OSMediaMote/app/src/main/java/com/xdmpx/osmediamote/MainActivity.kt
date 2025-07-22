@@ -39,6 +39,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
+import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
 
@@ -134,7 +135,9 @@ class MainActivity : ComponentActivity() {
             val iconModifier = Modifier.size(75.dp)
 
             Text(title.value)
-            Text("${position.value} / ${duration.value}")
+            val position = position.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
+            val duration = duration.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
+            Text("$position / $duration")
             Row {
                 IconButton(onClick = { requestPlayPrev(ip) }, modifier = iconModifier) {
                     Icon(
@@ -287,4 +290,13 @@ class MainActivity : ComponentActivity() {
 
         volleyQueue.add(stringRequest)
     }
+
+    private fun secsToHMS(seconds: Long): String {
+        val h = seconds / 3600
+        val m = (seconds - h * 3600) / 60
+        val s = seconds - h * 3600 - m * 60
+
+        return String.format(null, "%02d:%02d:%02d", h, m, s)
+    }
+
 }
