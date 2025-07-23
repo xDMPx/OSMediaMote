@@ -1,6 +1,5 @@
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use os_mediamote::media_controller;
-use std::{fs::File, io::Read};
 
 struct AppState {
     mc: media_controller::MediaController,
@@ -70,27 +69,6 @@ async fn title(data: web::Data<AppState>) -> impl Responder {
         .body(title)
 }
 
-#[cfg(target_os = "linux")]
-#[get("/art")]
-async fn art(data: web::Data<AppState>) -> impl Responder {
-    let art = data.mc.media_get_art().unwrap();
-    println!("Art: {}", art);
-    if art.starts_with("file://") {
-        let path = art.strip_prefix("file://").unwrap();
-        let path = urlencoding::decode(path).unwrap().into_owned();
-        println!("Art path: {}", path);
-        let mut image_file = File::open(path).unwrap();
-        let mut data = vec![];
-        image_file.read_to_end(&mut data).unwrap();
-        HttpResponse::Ok().body(data)
-    } else {
-        HttpResponse::Ok()
-            .content_type("text/plain; charset=utf-8")
-            .body(art)
-    }
-}
-
-#[cfg(target_os = "windows")]
 #[get("/art")]
 async fn art(data: web::Data<AppState>) -> impl Responder {
     let art = data.mc.media_get_art().unwrap();

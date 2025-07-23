@@ -94,7 +94,7 @@ impl MediaController {
         Ok(title)
     }
 
-    pub fn media_get_art(&self) -> Result<String, MediaControllerError> {
+    pub fn media_get_art(&self) -> Result<Vec<u8>, MediaControllerError> {
         let player: mpris::Player =
             self.player
                 .find_active()
@@ -113,7 +113,19 @@ impl MediaController {
             .unwrap_or("")
             .to_owned();
 
-        Ok(art_url)
+        println!("Art URL: {}", art_url);
+
+        if art_url.starts_with("file://") {
+            let path = art_url.strip_prefix("file://").unwrap();
+            let path = urlencoding::decode(path).unwrap().into_owned();
+            let mut image_file = std::fs::File::open(path).unwrap();
+            let mut data = vec![];
+            std::io::Read::read_to_end(&mut image_file, &mut data).unwrap();
+
+            Ok(data)
+        } else {
+            Ok(art_url.as_bytes().to_owned())
+        }
     }
 
     pub fn media_get_duration(&self) -> Result<f32, MediaControllerError> {
