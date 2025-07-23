@@ -90,6 +90,13 @@ async fn art(data: web::Data<AppState>) -> impl Responder {
     }
 }
 
+#[cfg(target_os = "windows")]
+#[get("/art")]
+async fn art(data: web::Data<AppState>) -> impl Responder {
+    let art = data.mc.media_get_art().unwrap();
+    HttpResponse::Ok().body(art)
+}
+
 #[get("/duration")]
 async fn duration(data: web::Data<AppState>) -> impl Responder {
     let duration = data.mc.media_get_duration().unwrap();

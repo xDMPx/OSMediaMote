@@ -1,5 +1,8 @@
 use futures::executor::block_on;
-use windows::Media;
+use windows::{
+    Media,
+    Storage::Streams::{Buffer, DataReader, InputStreamOptions},
+};
 
 #[derive(Debug)]
 pub struct MediaControllerError {}
@@ -74,8 +77,12 @@ impl MediaController {
         let session = session_manager.GetCurrentSession().unwrap();
 
         session.TrySkipNextAsync().unwrap().await.unwrap();
-        let possition = (duration-2.0) as i64;
-        session.TryChangePlaybackPositionAsync(possition*10_000_000).unwrap().await.unwrap();
+        let possition = (duration - 2.0) as i64;
+        session
+            .TryChangePlaybackPositionAsync(possition * 10_000_000)
+            .unwrap()
+            .await
+            .unwrap();
         Ok(())
     }
 
@@ -161,5 +168,46 @@ impl MediaController {
         let playback_status = session.GetPlaybackInfo().unwrap().PlaybackStatus().unwrap();
 
         Ok(playback_status.0 == 4)
+    }
+
+    pub fn media_get_art(&self) -> Result<Vec<u8>, MediaControllerError> {
+        block_on(self._media_get_art())
+    }
+
+    async fn _media_get_art(&self) -> Result<Vec<u8>, MediaControllerError> {
+        let session_manager =
+            Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+                .unwrap()
+                .await
+                .unwrap();
+        let session = session_manager.GetCurrentSession().unwrap();
+        let sesiion_media_properties = session.TryGetMediaPropertiesAsync().unwrap().await.unwrap();
+
+        let thumbnail = sesiion_media_properties.Thumbnail().unwrap();
+        let stream = thumbnail.OpenReadAsync().unwrap().await.unwrap();
+
+        let size: u32 = stream.Size().unwrap().try_into().unwrap();
+        let buffer = Buffer::Create(size).unwrap();
+
+        println!(
+            "Stream ContentType/Size {:?}/{:?}",
+            stream.ContentType(),
+            size
+        );
+
+        let read_buffer = stream
+            .ReadAsync(&buffer, size, InputStreamOptions::None)
+            .unwrap()
+            .await
+            .unwrap();
+
+        let data_reader = DataReader::FromBuffer(&read_buffer).unwrap();
+        let mut bytes = vec![0u8; size as usize];
+        data_reader.ReadBytes(&mut bytes).unwrap();
+
+        data_reader.Close().unwrap();
+        stream.Close().unwrap();
+
+        Ok(bytes)
     }
 }
