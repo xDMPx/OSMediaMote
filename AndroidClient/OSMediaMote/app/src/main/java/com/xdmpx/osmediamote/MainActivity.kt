@@ -26,6 +26,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,12 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
-import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
 
@@ -52,6 +55,7 @@ class MainActivity : ComponentActivity() {
     private var duration: MutableState<String> = mutableStateOf("")
     private var position: MutableState<String> = mutableStateOf("")
     private var isPlaying: MutableState<Boolean> = mutableStateOf(false)
+    private var artHash: MutableState<Int> = mutableIntStateOf(0)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,6 +130,27 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
+    fun ArtIcon(modifier: Modifier = Modifier) {
+        // Hash value used to circumvent the caching
+        val url = "http://${ip.value}:65420/art?hash=${artHash.value}"
+        Log.d("ArtIcon", url)
+        Box(
+            contentAlignment = Alignment.Center, modifier = modifier
+                .fillMaxHeight()
+                .padding(5.dp)
+        ) {
+            AsyncImage(
+                model = url, contentDescription = null, onError = {
+                    Log.e(
+                        "AsyncImage", "$url Failed: ${it.result.throwable}"
+                    )
+                    //if (it.result.throwable.toString().contains("403")) {}
+                }, modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+
+    @Composable
     private fun MediaControlScreen(ip: String, modifier: Modifier = Modifier) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -134,6 +159,11 @@ class MainActivity : ComponentActivity() {
         ) {
             val iconModifier = Modifier.size(75.dp)
 
+            Box(
+                contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
+            ) {
+                ArtIcon()
+            }
             Text(title.value)
             val position = position.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
             val duration = duration.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
@@ -192,6 +222,9 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/title"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
+            if (title.value != response.toString()) {
+                artHash.value += 1
+            }
             title.value = response.toString()
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 

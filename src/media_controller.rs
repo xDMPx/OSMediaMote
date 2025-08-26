@@ -113,7 +113,7 @@ impl MediaController {
             .unwrap_or("")
             .to_owned();
 
-        println!("Art URL: {}", art_url);
+        println!("Art URL: {art_url}");
 
         if art_url.starts_with("file://") {
             let path = art_url.strip_prefix("file://").unwrap();
