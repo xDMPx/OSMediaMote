@@ -25,6 +25,7 @@ async fn main() -> std::io::Result<()> {
             .service(duration)
             .service(position)
             .service(is_playing)
+            .service(ping)
     })
     .bind(("0.0.0.0", 65420))?
     .run()
@@ -97,4 +98,9 @@ async fn is_playing(data: web::Data<AppState>) -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/plain; charset=utf-8")
         .body(format!("{is_playing}"))
+}
+
+#[get("/ping")]
+async fn ping() -> impl Responder {
+    HttpResponse::Ok()
 }
