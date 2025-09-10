@@ -59,4 +59,6 @@ dependencies {
 
     implementation(libs.volley)
     implementation(libs.coil.compose)
+
+    implementation(libs.androidx.datastore.preferences)
 }

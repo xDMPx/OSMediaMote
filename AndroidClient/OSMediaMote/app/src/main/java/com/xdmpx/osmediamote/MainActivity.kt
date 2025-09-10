@@ -1,5 +1,6 @@
 package com.xdmpx.osmediamote
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -35,6 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.coroutineScope
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -43,24 +50,42 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.Timer
 import java.util.TimerTask
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "osmediamote_store")
 
 class MainActivity : ComponentActivity() {
     private lateinit var volleyQueue: RequestQueue
     private var updateTimer: Timer? = null
 
     private var ip: MutableState<String?> = mutableStateOf(null)
+    private var ipText: MutableState<String> = mutableStateOf("")
     private var title: MutableState<String> = mutableStateOf("")
     private var duration: MutableState<String> = mutableStateOf("")
     private var position: MutableState<String> = mutableStateOf("")
     private var isPlaying: MutableState<Boolean> = mutableStateOf(false)
     private var artHash: MutableState<Int> = mutableIntStateOf(0)
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         volleyQueue = Volley.newRequestQueue(this)
+
+        val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
+        val lastConnectedIPValue: Flow<String> = this.dataStore.data.catch {}.map { preferences ->
+            preferences[lastConnectedIPValueKey] ?: ""
+        }
+
+        this.lifecycle.coroutineScope.launch {
+            val value = lastConnectedIPValue.first()
+            Log.i("MainActivity", "LastConnectedIP -> $value")
+            ipText.value = value
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -113,9 +138,16 @@ class MainActivity : ComponentActivity() {
         fetchDuration(ip)
     }
 
+    private suspend fun saveLastConnectedIPValue() {
+        val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
+        this@MainActivity.dataStore.edit { preferences ->
+            preferences[lastConnectedIPValueKey] = ip.value!!
+        }
+    }
+
     @Composable
     private fun IpInputScreen(modifier: Modifier = Modifier) {
-        var text by remember { mutableStateOf("") }
+        var text by remember { mutableStateOf(ipText.value) }
 
         Column(
             verticalArrangement = Arrangement.Center,
@@ -124,7 +156,12 @@ class MainActivity : ComponentActivity() {
         ) {
             TextField(value = text, onValueChange = { text = it }, label = { Text("IP") })
             Spacer(modifier = Modifier.height(10.dp))
-            Button({ ip.value = text }, modifier = Modifier.fillMaxWidth(0.5f)) { Text("Confirm") }
+            Button(
+                {
+                    ip.value = text
+                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                }, modifier = Modifier.fillMaxWidth(0.5f)
+            ) { Text("Confirm") }
         }
 
     }
