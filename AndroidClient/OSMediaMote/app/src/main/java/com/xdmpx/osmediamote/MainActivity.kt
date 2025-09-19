@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
     private var position: MutableState<String> = mutableStateOf("")
     private var isPlaying: MutableState<Boolean> = mutableStateOf(false)
     private var artHash: MutableState<Int> = mutableIntStateOf(0)
+    private var drawFallbackIcon: MutableState<Boolean> = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -182,6 +183,7 @@ class MainActivity : ComponentActivity() {
                     Log.e(
                         "AsyncImage", "$url Failed: ${it.result.throwable}"
                     )
+                    drawFallbackIcon.value = true
                     //if (it.result.throwable.toString().contains("403")) {}
                 }, modifier = Modifier.fillMaxSize()
             )
@@ -200,7 +202,15 @@ class MainActivity : ComponentActivity() {
             Box(
                 contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
             ) {
-                ArtIcon()
+                if (!drawFallbackIcon.value) {
+                    ArtIcon()
+                } else {
+                    Icon(
+                        painterResource(R.drawable.rounded_music_video_24),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
             Text(title.value)
             val positionInHMS =
@@ -264,6 +274,7 @@ class MainActivity : ComponentActivity() {
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             if (title.value != response.toString()) {
                 artHash.value += 1
+                drawFallbackIcon.value = false
             }
             title.value = response.toString()
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
