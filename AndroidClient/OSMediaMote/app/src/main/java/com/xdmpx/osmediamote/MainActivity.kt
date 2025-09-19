@@ -144,7 +144,11 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun IpInputScreen(modifier: Modifier = Modifier) {
-        var text by remember { mutableStateOf(ipText.value) }
+        var text by remember { mutableStateOf("") }
+        if (ipText.value.isNotBlank() && text.isBlank()) {
+            text = ipText.value
+            ipText.value = ""
+        }
 
         Column(
             verticalArrangement = Arrangement.Center,
@@ -199,8 +203,10 @@ class MainActivity : ComponentActivity() {
                 ArtIcon()
             }
             Text(title.value)
-            val positionInHMS = position.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
-            val durationInHMS = duration.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            val positionInHMS =
+                position.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            val durationInHMS =
+                duration.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
             Text("$positionInHMS / $durationInHMS")
             Row {
                 IconButton(onClick = { requestPlayPrev(ip) }, modifier = iconModifier) {

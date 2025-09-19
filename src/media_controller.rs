@@ -221,6 +221,23 @@ impl MediaController {
         Ok(())
     }
 
+    pub fn media_play_next2(&self) -> Result<(), MediaControllerError> {
+        let player: mpris::Player =
+            self.player
+                .find_active()
+                .map_err(|e| MediaControllerError {
+                    finding_error: Some(e),
+                    dbus_error: None,
+                })?;
+
+        player.checked_next().map_err(|e| MediaControllerError {
+            finding_error: None,
+            dbus_error: Some(e),
+        })?;
+
+        Ok(())
+    }
+
     pub fn media_play_prev(&self) -> Result<(), MediaControllerError> {
         let player: mpris::Player =
             self.player
