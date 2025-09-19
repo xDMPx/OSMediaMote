@@ -135,6 +135,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun saveLastConnectedIPValue() {
+        if (ip.value.isNullOrBlank()) return
         val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
         this@MainActivity.dataStore.edit { preferences ->
             preferences[lastConnectedIPValueKey] = ip.value!!
