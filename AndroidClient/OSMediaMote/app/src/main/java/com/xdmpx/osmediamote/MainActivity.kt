@@ -198,9 +198,9 @@ class MainActivity : ComponentActivity() {
                 ArtIcon()
             }
             Text(title.value)
-            val position = position.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
-            val duration = duration.value.toLongOrNull()?.let { secsToHMS(it) }.orEmpty()
-            Text("$position / $duration")
+            val positionInHMS = position.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            val durationInHMS = duration.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            Text("$positionInHMS / $durationInHMS")
             Row {
                 IconButton(onClick = { requestPlayPrev(ip) }, modifier = iconModifier) {
                     Icon(
