@@ -94,6 +94,28 @@ impl MediaController {
         Ok(title)
     }
 
+    pub fn media_get_artist(&self) -> Result<String, MediaControllerError> {
+        let player: mpris::Player =
+            self.player
+                .find_active()
+                .map_err(|e| MediaControllerError {
+                    finding_error: Some(e),
+                    dbus_error: None,
+                })?;
+
+        let artists = player
+            .get_metadata()
+            .map_err(|e| MediaControllerError {
+                dbus_error: Some(e),
+                finding_error: None,
+            })?
+            .artists()
+            .map(|x| x.join(", "))
+            .unwrap_or("".to_string());
+
+        Ok(artists)
+    }
+
     pub fn media_get_art(&self) -> Result<Vec<u8>, MediaControllerError> {
         let player: mpris::Player =
             self.player

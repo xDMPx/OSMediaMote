@@ -210,4 +210,24 @@ impl MediaController {
 
         Ok(bytes)
     }
+
+    pub fn media_get_artist(&self) -> Result<String, MediaControllerError> {
+        block_on(self._media_get_artist())
+    }
+
+    async fn _media_get_artist(&self) -> Result<String, MediaControllerError> {
+        let session_manager =
+            Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+                .unwrap()
+                .await
+                .unwrap();
+        let session = session_manager.GetCurrentSession().unwrap();
+        let sesiion_media_properties = session.TryGetMediaPropertiesAsync().unwrap().await.unwrap();
+
+        if let Ok(artist) = sesiion_media_properties.Artist() {
+            Ok(format!("{}", artist))
+        } else {
+            Ok("".to_string())
+        }
+    }
 }

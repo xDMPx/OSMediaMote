@@ -22,6 +22,7 @@ async fn main() -> std::io::Result<()> {
             .service(play_prev)
             .service(title)
             .service(art)
+            .service(artist)
             .service(duration)
             .service(position)
             .service(is_playing)
@@ -68,6 +69,12 @@ async fn title(data: web::Data<AppState>) -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/plain; charset=utf-8")
         .body(title)
+}
+
+#[get("/artist")]
+async fn artist(data: web::Data<AppState>) -> impl Responder {
+    let artist = data.mc.media_get_artist().unwrap();
+    HttpResponse::Ok().body(artist)
 }
 
 #[get("/art")]
