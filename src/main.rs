@@ -1,5 +1,3 @@
-use std::u64;
-
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use os_mediamote::media_controller;
 
@@ -54,7 +52,7 @@ async fn play_pause(data: web::Data<AppState>) -> impl Responder {
 
 #[get("/play_next")]
 async fn play_next(data: web::Data<AppState>) -> impl Responder {
-    data.mc.media_play_next2().unwrap();
+    data.mc.media_play_next().unwrap();
     HttpResponse::Ok()
 }
 
@@ -81,8 +79,6 @@ async fn art(data: web::Data<AppState>) -> impl Responder {
 #[get("/duration")]
 async fn duration(data: web::Data<AppState>) -> impl Responder {
     let duration = data.mc.media_get_duration().unwrap();
-    //let duration = duration as u64;
-    //println!("duration: {duration}");
     HttpResponse::Ok()
         .content_type("text/plain; charset=utf-8")
         .body(format!("{duration}"))
@@ -91,8 +87,6 @@ async fn duration(data: web::Data<AppState>) -> impl Responder {
 #[get("/position")]
 async fn position(data: web::Data<AppState>) -> impl Responder {
     let position = data.mc.media_get_position().unwrap();
-    //let position = position as u65;
-    //println!("position: {position}");
     HttpResponse::Ok()
         .content_type("text/plain; charset=utf-8")
         .body(format!("{position}"))
