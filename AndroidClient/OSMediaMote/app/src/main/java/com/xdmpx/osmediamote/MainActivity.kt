@@ -3,9 +3,11 @@ package com.xdmpx.osmediamote
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +19,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -33,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,6 +77,8 @@ class MainActivity : ComponentActivity() {
     private var isPlaying: MutableState<Boolean> = mutableStateOf(false)
     private var artHash: MutableState<Int> = mutableIntStateOf(0)
     private var drawFallbackIcon: MutableState<Boolean> = mutableStateOf(false)
+    private var pingState: MutableState<Int> = mutableIntStateOf(0)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,12 +99,33 @@ class MainActivity : ComponentActivity() {
         setContent {
             OSMediaMoteTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    if (ip.value == null) {
-                        IpInputScreen(
-                            modifier = Modifier
-                                .padding(innerPadding)
-                                .fillMaxSize()
-                        )
+                    if (ip.value == null || pingState.value != 2) {
+                        if (pingState.value == 0) {
+                            IpInputScreen(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                                    .fillMaxSize()
+                            )
+                        }
+                        if (pingState.value == 1) {
+                            IpInputScreen(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                                    .fillMaxSize()
+                            )
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color = Color(0x7FA8A8A8))
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.width(64.dp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                )
+                            }
+                        }
                     } else {
                         ip.value?.let {
                             scheduleTimer()
@@ -164,6 +193,8 @@ class MainActivity : ComponentActivity() {
             Button(
                 {
                     ip.value = text
+                    pingState.value = 1
+                    pingServer(text)
                     this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                 }, modifier = Modifier.fillMaxWidth(0.5f)
             ) { Text("Confirm") }
@@ -291,6 +322,23 @@ class MainActivity : ComponentActivity() {
                 }
             }, 0, 500
         )
+    }
+
+    private fun pingServer(ip: String) {
+        val url = "http://${ip}:65420/ping"
+
+        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
+            pingState.value = 2
+        }, { err ->
+            Log.e("VolleyError:", "$url -> $err")
+            pingState.value = 0
+            Toast.makeText(
+                this@MainActivity, "Connection failed", Toast.LENGTH_SHORT
+            ).show()
+            ipText.value = ip
+        })
+
+        volleyQueue.add(stringRequest)
     }
 
     private fun fetchTitle(ip: String) {
