@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,17 +69,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "os
 class MainActivity : ComponentActivity() {
     private lateinit var volleyQueue: RequestQueue
     private var updateTimer: Timer? = null
-
-    private var ip: MutableState<String?> = mutableStateOf(null)
-    private var ipText: MutableState<String> = mutableStateOf("")
-    private var title: MutableState<String> = mutableStateOf("")
-    private var duration: MutableState<String> = mutableStateOf("")
-    private var position: MutableState<String> = mutableStateOf("")
-    private var isPlaying: MutableState<Boolean> = mutableStateOf(false)
-    private var artHash: MutableState<Int> = mutableIntStateOf(0)
-    private var drawFallbackIcon: MutableState<Boolean> = mutableStateOf(false)
-    private var pingState: MutableState<Int> = mutableIntStateOf(0)
-
+    private val osMediaMoteViewModel = OSMediaMote()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,22 +83,23 @@ class MainActivity : ComponentActivity() {
         this.lifecycle.coroutineScope.launch {
             val value = lastConnectedIPValue.first()
             Log.i("MainActivity", "LastConnectedIP -> $value")
-            ipText.value = value
+            osMediaMoteViewModel.setIpText(value)
         }
 
         enableEdgeToEdge()
         setContent {
             OSMediaMoteTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    if (ip.value == null || pingState.value != 2) {
-                        if (pingState.value == 0) {
+                    val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                    if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
+                        if (osMediaMoteState.pingState == 0) {
                             IpInputScreen(
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
                             )
                         }
-                        if (pingState.value == 1) {
+                        if (osMediaMoteState.pingState == 1) {
                             IpInputScreen(
                                 modifier = Modifier
                                     .padding(innerPadding)
@@ -127,7 +119,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     } else {
-                        ip.value?.let {
+                        osMediaMoteState.ip?.let {
                             scheduleTimer()
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -155,7 +147,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        ip.value?.let {
+        osMediaMoteViewModel.osMediaMoteState.value.ip.let {
             updateTimer?.cancel()
             scheduleTimer()
         }
@@ -168,19 +160,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun saveLastConnectedIPValue() {
-        if (ip.value.isNullOrBlank()) return
+        if (osMediaMoteViewModel.osMediaMoteState.value.ip.isNullOrBlank()) return
         val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
         this@MainActivity.dataStore.edit { preferences ->
-            preferences[lastConnectedIPValueKey] = ip.value!!
+            preferences[lastConnectedIPValueKey] = osMediaMoteViewModel.osMediaMoteState.value.ip!!
         }
     }
 
     @Composable
     private fun IpInputScreen(modifier: Modifier = Modifier) {
+        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
         var text by remember { mutableStateOf("") }
-        if (ipText.value.isNotBlank() && text.isBlank()) {
-            text = ipText.value
-            ipText.value = ""
+        if (osMediaMoteState.ipText.isNotBlank() && text.isBlank()) {
+            text = osMediaMoteState.ipText
+            osMediaMoteViewModel.setIpText("")
         }
 
         Column(
@@ -192,8 +185,8 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 {
-                    ip.value = text
-                    pingState.value = 1
+                    osMediaMoteViewModel.setIp(text)
+                    osMediaMoteViewModel.setPingState(1)
                     pingServer(text)
                     this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                 }, modifier = Modifier.fillMaxWidth(0.5f)
@@ -204,8 +197,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun ArtIcon(modifier: Modifier = Modifier) {
+        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
         // Hash value used to circumvent the caching
-        val url = "http://${ip.value}:65420/art?hash=${artHash.value}"
+        val url = "http://${osMediaMoteState.ip}:65420/art?hash=${osMediaMoteState.artHash}"
         Log.d("ArtIcon", url)
         Box(
             contentAlignment = Alignment.Center, modifier = modifier
@@ -217,7 +211,7 @@ class MainActivity : ComponentActivity() {
                     Log.e(
                         "AsyncImage", "$url Failed: ${it.result.throwable}"
                     )
-                    drawFallbackIcon.value = true
+                    osMediaMoteViewModel.setDrawFallbackIcon(true)
                     //if (it.result.throwable.toString().contains("403")) {}
                 }, modifier = Modifier.fillMaxSize()
             )
@@ -226,6 +220,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun MediaControlScreen(ip: String, modifier: Modifier = Modifier) {
+        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -236,7 +231,7 @@ class MainActivity : ComponentActivity() {
             Box(
                 contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
             ) {
-                if (!drawFallbackIcon.value) {
+                if (!osMediaMoteState.drawFallbackIcon) {
                     ArtIcon()
                 } else {
                     Icon(
@@ -246,14 +241,14 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            Text(title.value)
+            Text(osMediaMoteState.title)
             val positionInHMS =
-                position.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+                osMediaMoteState.position.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
             val durationInHMS =
-                duration.value.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+                osMediaMoteState.duration.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
             Column {
-                position.value.toFloatOrNull()?.let { pos ->
-                    duration.value.toFloatOrNull()?.let {
+                osMediaMoteState.position.toFloatOrNull()?.let { pos ->
+                    osMediaMoteState.duration.toFloatOrNull()?.let {
                         PositionSlider(pos, it)
                     }
                 }
@@ -276,7 +271,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 IconButton(onClick = { requestPlayPause(ip) }, modifier = iconModifier) {
-                    if (isPlaying.value) {
+                    if (osMediaMoteState.isPlaying) {
                         Icon(
                             painterResource(R.drawable.round_pause_24),
                             contentDescription = null,
@@ -316,7 +311,7 @@ class MainActivity : ComponentActivity() {
         updateTimer?.schedule(
             object : TimerTask() {
                 override fun run() {
-                    ip.value?.let {
+                    osMediaMoteViewModel.osMediaMoteState.value.ip?.let {
                         fetchData(it)
                     }
                 }
@@ -328,14 +323,14 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/ping"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            pingState.value = 2
+            osMediaMoteViewModel.setPingState(2)
         }, { err ->
             Log.e("VolleyError:", "$url -> $err")
-            pingState.value = 0
+            osMediaMoteViewModel.setPingState(0)
             Toast.makeText(
                 this@MainActivity, "Connection failed", Toast.LENGTH_SHORT
             ).show()
-            ipText.value = ip
+            osMediaMoteViewModel.setIpText(ip)
         })
 
         volleyQueue.add(stringRequest)
@@ -345,11 +340,11 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/title"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            if (title.value != response.toString()) {
-                artHash.value += 1
-                drawFallbackIcon.value = false
+            if (osMediaMoteViewModel.osMediaMoteState.value.title != response.toString()) {
+                osMediaMoteViewModel.incrementArtHash()
+                osMediaMoteViewModel.setDrawFallbackIcon(false)
             }
-            title.value = response.toString()
+            osMediaMoteViewModel.setTitle(response.toString())
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 
         volleyQueue.add(stringRequest)
@@ -359,7 +354,7 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/duration"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            duration.value = response.toString()
+            osMediaMoteViewModel.setDuration(response.toString())
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 
         volleyQueue.add(stringRequest)
@@ -369,7 +364,7 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/position"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            position.value = response.toString()
+            osMediaMoteViewModel.setPosition(response.toString())
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 
         volleyQueue.add(stringRequest)
@@ -379,8 +374,8 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/is_playing"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            isPlaying.value = response.toString() == "true"
-            if (isPlaying.value) {
+            osMediaMoteViewModel.setIsPlaying(response.toString() == "true")
+            if (osMediaMoteViewModel.osMediaMoteState.value.isPlaying) {
                 fetchPosition(ip)
             }
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
