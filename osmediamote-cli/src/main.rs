@@ -50,6 +50,14 @@ fn main() {
                 let res = reqwest_get(&format!("http://{ip}:65420/position")).unwrap();
                 println!("{}", res.text().unwrap());
             }
+            ProgramOption::Metadata => {
+                let res = reqwest_get(&format!("http://{ip}:65420/title")).unwrap();
+                println!("Title: {}", res.text().unwrap());
+                let res = reqwest_get(&format!("http://{ip}:65420/duration")).unwrap();
+                println!("Duration: {}", res.text().unwrap());
+                let res = reqwest_get(&format!("http://{ip}:65420/artist")).unwrap();
+                println!("Artist: {}", res.text().unwrap());
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ pub enum ProgramOption {
     Previous,
     Status,
     Position,
+    Metadata,
 }
 
 pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
@@ -62,6 +63,7 @@ pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
             "previous" => Ok(ProgramOption::Previous),
             "status" => Ok(ProgramOption::Status),
             "position" => Ok(ProgramOption::Position),
+            "metadata" => Ok(ProgramOption::Metadata),
             _ => Err(OSMediaMoteError::InvalidOption(arg)),
         };
         options.push(arg?);
