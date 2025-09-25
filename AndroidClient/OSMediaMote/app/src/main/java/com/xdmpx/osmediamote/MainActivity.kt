@@ -33,9 +33,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -93,6 +90,7 @@ class MainActivity : ComponentActivity() {
                     if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
                         if (osMediaMoteState.pingState == 0) {
                             IpInputScreen(
+                                osMediaMoteState.ipText,
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
@@ -100,6 +98,7 @@ class MainActivity : ComponentActivity() {
                         }
                         if (osMediaMoteState.pingState == 1) {
                             IpInputScreen(
+                                osMediaMoteState.ipText,
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
@@ -127,7 +126,14 @@ class MainActivity : ComponentActivity() {
                                     .fillMaxSize()
                             ) {
                                 MediaControlScreen(
-                                    it, Modifier
+                                    ip = it,
+                                    title = osMediaMoteState.title,
+                                    position = osMediaMoteState.position,
+                                    duration = osMediaMoteState.duration,
+                                    artHash = osMediaMoteState.artHash,
+                                    isPlaying = osMediaMoteState.isPlaying,
+                                    drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
+                                    modifier = Modifier
                                         .fillMaxWidth(0.75f)
                                         .fillMaxHeight()
                                 )
@@ -167,26 +173,22 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun IpInputScreen(modifier: Modifier = Modifier) {
-        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
-        var text by remember { mutableStateOf("") }
-        if (osMediaMoteState.ipText.isNotBlank() && text.isBlank()) {
-            text = osMediaMoteState.ipText
-            osMediaMoteViewModel.setIpText("")
-        }
-
+    private fun IpInputScreen(ipText: String, modifier: Modifier = Modifier) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
         ) {
-            TextField(value = text, onValueChange = { text = it }, label = { Text("IP") })
+            TextField(
+                value = ipText,
+                onValueChange = { osMediaMoteViewModel.setIpText(it) },
+                label = { Text("IP") })
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 {
-                    osMediaMoteViewModel.setIp(text)
+                    osMediaMoteViewModel.setIp(ipText)
                     osMediaMoteViewModel.setPingState(1)
-                    pingServer(text)
+                    pingServer(ipText)
                     this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                 }, modifier = Modifier.fillMaxWidth(0.5f)
             ) { Text("Confirm") }
@@ -195,10 +197,9 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ArtIcon(modifier: Modifier = Modifier) {
-        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+    fun ArtIcon(ip: String, artHash: Int, modifier: Modifier = Modifier) {
         // Hash value used to circumvent the caching
-        val url = "http://${osMediaMoteState.ip}:65420/art?hash=${osMediaMoteState.artHash}"
+        val url = "http://${ip}:65420/art?hash=${artHash}"
         Log.d("ArtIcon", url)
         Box(
             contentAlignment = Alignment.Center, modifier = modifier
@@ -218,8 +219,16 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun MediaControlScreen(ip: String, modifier: Modifier = Modifier) {
-        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+    private fun MediaControlScreen(
+        ip: String,
+        artHash: Int,
+        title: String,
+        position: String,
+        duration: String,
+        drawFallbackIcon: Boolean,
+        isPlaying: Boolean,
+        modifier: Modifier = Modifier
+    ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -230,8 +239,8 @@ class MainActivity : ComponentActivity() {
             Box(
                 contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
             ) {
-                if (!osMediaMoteState.drawFallbackIcon) {
-                    ArtIcon()
+                if (!drawFallbackIcon) {
+                    ArtIcon(ip, artHash)
                 } else {
                     Icon(
                         painterResource(R.drawable.rounded_music_video_24),
@@ -240,14 +249,12 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            Text(osMediaMoteState.title)
-            val positionInHMS =
-                osMediaMoteState.position.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
-            val durationInHMS =
-                osMediaMoteState.duration.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            Text(title)
+            val positionInHMS = position.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            val durationInHMS = duration.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
             Column {
-                osMediaMoteState.position.toFloatOrNull()?.let { pos ->
-                    osMediaMoteState.duration.toFloatOrNull()?.let {
+                position.toFloatOrNull()?.let { pos ->
+                    duration.toFloatOrNull()?.let {
                         PositionSlider(pos, it)
                     }
                 }
@@ -270,7 +277,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 IconButton(onClick = { requestPlayPause(ip) }, modifier = iconModifier) {
-                    if (osMediaMoteState.isPlaying) {
+                    if (isPlaying) {
                         Icon(
                             painterResource(R.drawable.round_pause_24),
                             contentDescription = null,
