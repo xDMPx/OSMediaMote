@@ -1,4 +1,4 @@
-use osmediamote_cli::{ProgramOption, process_args, reqwest_get};
+use osmediamote_cli::{ProgramOption, print_help, process_args, reqwest_get};
 
 fn main() {
     let options = process_args()
@@ -12,9 +12,14 @@ fn main() {
                 }
                 _ => panic!("{:?}", err),
             }
+            print_help();
             std::process::exit(-1);
         })
         .unwrap();
+    if options.contains(&ProgramOption::PrintHelp) {
+        print_help();
+        std::process::exit(-1);
+    }
 
     let ip = options
         .iter()
@@ -58,6 +63,7 @@ fn main() {
                 let res = reqwest_get(&format!("http://{ip}:65420/artist")).unwrap();
                 println!("Artist: {}", res.text().unwrap());
             }
+            ProgramOption::PrintHelp => unreachable!(),
         }
     }
 }

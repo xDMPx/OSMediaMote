@@ -38,6 +38,7 @@ pub enum ProgramOption {
     Status,
     Position,
     Metadata,
+    PrintHelp,
 }
 
 pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
@@ -49,13 +50,15 @@ pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
         .pop()
         .ok_or(OSMediaMoteError::InvalidOptionsStructure)?;
     let ip = last_arg;
-    if ip.chars().filter(|&c| c == '.').count() != 3 {
+    if ip.chars().filter(|&c| c == '.').count() != 3 && ip != "--help" {
         return Err(OSMediaMoteError::InvalidOptionsStructure);
     }
-    options.push(ProgramOption::IP(ip));
-
+    if ip != "--help" {
+        options.push(ProgramOption::IP(ip));
+    }
     for arg in args {
         let arg = match arg.as_str() {
+            "--help" => Ok(ProgramOption::PrintHelp),
             "play" => Ok(ProgramOption::Play),
             "pause" => Ok(ProgramOption::Pause),
             "play-pause" => Ok(ProgramOption::PlayPause),
@@ -69,9 +72,23 @@ pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
         options.push(arg?);
     }
 
-    if options.len() != 2 {
+    if options.len() != 2 && (options.contains(&ProgramOption::PrintHelp) && options.len() != 1) {
         return Err(OSMediaMoteError::InvalidOptionsStructure);
     }
 
     Ok(options)
+}
+
+pub fn print_help() {
+    println!("Usage: {} IP COMMAND", env!("CARGO_PKG_NAME"));
+    println!("       {} --help", env!("CARGO_PKG_NAME"));
+    println!("Commands:");
+    println!("\t play");
+    println!("\t pause");
+    println!("\t play-pause");
+    println!("\t next");
+    println!("\t previous");
+    println!("\t status");
+    println!("\t position");
+    println!("\t metadata");
 }
