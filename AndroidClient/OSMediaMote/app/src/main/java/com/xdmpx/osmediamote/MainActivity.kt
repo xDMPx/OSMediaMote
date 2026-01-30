@@ -28,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,11 +48,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.coroutineScope
-import coil.compose.AsyncImage
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
+import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -202,28 +202,6 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ArtIcon(ip: String, artHash: Int, modifier: Modifier = Modifier) {
-        // Hash value used to circumvent the caching
-        val url = "http://${ip}:65420/art?hash=${artHash}"
-        Log.d("ArtIcon", url)
-        Box(
-            contentAlignment = Alignment.Center, modifier = modifier
-                .fillMaxHeight()
-                .padding(5.dp)
-        ) {
-            AsyncImage(
-                model = url, contentDescription = null, onError = {
-                    Log.e(
-                        "AsyncImage", "$url Failed: ${it.result.throwable}"
-                    )
-                    osMediaMoteViewModel.setDrawFallbackIcon(true)
-                    //if (it.result.throwable.toString().contains("403")) {}
-                }, modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-
-    @Composable
     private fun MediaControlScreen(
         ip: String,
         artHash: Int,
@@ -245,7 +223,7 @@ class MainActivity : ComponentActivity() {
                 contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
             ) {
                 if (!drawFallbackIcon) {
-                    ArtIcon(ip, artHash)
+                    ArtIcon(ip, artHash, osMediaMoteViewModel)
                 } else {
                     Icon(
                         painterResource(R.drawable.rounded_music_video_24),
@@ -307,14 +285,6 @@ class MainActivity : ComponentActivity() {
 
         }
 
-    }
-
-    @Composable
-    fun PositionSlider(position: Float, duration: Float) {
-        Column {
-            Slider(
-                value = position, valueRange = 0.0f..duration, onValueChange = { })
-        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
