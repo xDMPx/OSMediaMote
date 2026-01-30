@@ -5,7 +5,11 @@ Remotly control system media playback and retrive playback metadata via MPRIS(Li
 ## Clients
 
 - [osmediamote-cli](osmediamote-cli) - cli client inspired by playerctl
-- [android][AndroidClient] - android app
+- [android](./AndroidClient) - android app
+
+## Preview
+
+<img src="assets/preview.gif"></img>
 
 ## Building
 
