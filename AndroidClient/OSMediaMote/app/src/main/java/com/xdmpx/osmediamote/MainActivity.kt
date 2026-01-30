@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -182,7 +183,7 @@ class MainActivity : ComponentActivity() {
             TextField(
                 value = ipText,
                 onValueChange = { osMediaMoteViewModel.setIpText(it) },
-                label = { Text("IP") })
+                label = { Text(stringResource(R.string.ip)) })
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 {
@@ -191,7 +192,7 @@ class MainActivity : ComponentActivity() {
                     pingServer(ipText)
                     this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                 }, modifier = Modifier.fillMaxWidth(0.5f)
-            ) { Text("Confirm") }
+            ) { Text(stringResource(R.string.confirm)) }
         }
 
     }
@@ -334,7 +335,7 @@ class MainActivity : ComponentActivity() {
             Log.e("VolleyError:", "$url -> $err")
             osMediaMoteViewModel.setPingState(0)
             Toast.makeText(
-                this@MainActivity, "Connection failed", Toast.LENGTH_SHORT
+                this@MainActivity, getString(R.string.error_connection_failed), Toast.LENGTH_SHORT
             ).show()
             osMediaMoteViewModel.setIpText(ip)
         })
