@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -86,7 +88,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OSMediaMoteTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    topBar = { TopAppBar() }, modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
                     val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
                     if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
                         if (osMediaMoteState.pingState == 0) {
@@ -311,6 +315,17 @@ class MainActivity : ComponentActivity() {
             Slider(
                 value = position, valueRange = 0.0f..duration, onValueChange = { })
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun TopAppBar(
+    ) {
+        androidx.compose.material3.TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ), title = { Text(stringResource(R.string.app_name)) }, actions = {})
     }
 
     private fun scheduleTimer() {
