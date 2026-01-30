@@ -1,6 +1,6 @@
 # OSMediaMote
 
-Remotly control system media playback and retrive playback metadata via MPRIS(Linux) and (GlobalSystemMediaTransportControls) Windows.
+Remotely control system media playback and retrieve playback metadata via MPRIS(Linux) and (GlobalSystemMediaTransportControls) Windows.
 
 ## Clients
 

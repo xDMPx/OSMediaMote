@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,24 +21,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,6 +49,7 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
 import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
@@ -90,75 +88,88 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OSMediaMoteTheme {
-                Scaffold(
-                    topBar = { TopAppBar() }, modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
-                    if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
-                        if (osMediaMoteState.pingState == 0) {
-                            IpInputScreen(
-                                osMediaMoteState.ipText,
-                                onClick = { ipText ->
-                                    osMediaMoteViewModel.setIp(ipText)
-                                    osMediaMoteViewModel.setPingState(1)
-                                    pingServer(ipText)
-                                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
-                                },
-                                osMediaMoteViewModel = osMediaMoteViewModel,
-                                modifier = Modifier
-                                    .padding(innerPadding)
-                                    .fillMaxSize()
-                            )
-                        }
-                        if (osMediaMoteState.pingState == 1) {
-                            IpInputScreen(
-                                osMediaMoteState.ipText,
-                                onClick = { ipText ->
-                                    osMediaMoteViewModel.setIp(ipText)
-                                    osMediaMoteViewModel.setPingState(1)
-                                    pingServer(ipText)
-                                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
-                                },
-                                osMediaMoteViewModel = osMediaMoteViewModel,
-                                modifier = Modifier
-                                    .padding(innerPadding)
-                                    .fillMaxSize()
-                            )
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(color = Color(0x7FA8A8A8))
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.width(64.dp),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                )
-                            }
-                        }
-                    } else {
-                        osMediaMoteState.ip?.let {
-                            scheduleTimer()
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .padding(innerPadding)
-                                    .fillMaxSize()
-                            ) {
-                                MediaControlScreen(
-                                    ip = it,
-                                    title = osMediaMoteState.title,
-                                    position = osMediaMoteState.position,
-                                    duration = osMediaMoteState.duration,
-                                    artHash = osMediaMoteState.artHash,
-                                    isPlaying = osMediaMoteState.isPlaying,
-                                    drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
+                val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                Log.d("MainScreen", "Update")
+                if (!osMediaMoteState.aboutScreen) {
+                    Scaffold(
+                        topBar = { TopAppBar() { osMediaMoteViewModel.setAboutScreen(true) } },
+                        modifier = Modifier.fillMaxSize()
+                    ) { innerPadding ->
+                        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                        if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
+                            if (osMediaMoteState.pingState == 0) {
+                                IpInputScreen(
+                                    osMediaMoteState.ipText,
+                                    onClick = { ipText ->
+                                        osMediaMoteViewModel.setIp(ipText)
+                                        osMediaMoteViewModel.setPingState(1)
+                                        pingServer(ipText)
+                                        this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                    },
+                                    osMediaMoteViewModel = osMediaMoteViewModel,
                                     modifier = Modifier
-                                        .fillMaxWidth(0.75f)
-                                        .fillMaxHeight()
+                                        .padding(innerPadding)
+                                        .fillMaxSize()
                                 )
                             }
+                            if (osMediaMoteState.pingState == 1) {
+                                IpInputScreen(
+                                    osMediaMoteState.ipText,
+                                    onClick = { ipText ->
+                                        osMediaMoteViewModel.setIp(ipText)
+                                        osMediaMoteViewModel.setPingState(1)
+                                        pingServer(ipText)
+                                        this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                    },
+                                    osMediaMoteViewModel = osMediaMoteViewModel,
+                                    modifier = Modifier
+                                        .padding(innerPadding)
+                                        .fillMaxSize()
+                                )
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color = Color(0x7FA8A8A8))
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.width(64.dp),
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    )
+                                }
+                            }
+                        } else {
+                            osMediaMoteState.ip?.let {
+                                scheduleTimer()
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .padding(innerPadding)
+                                        .fillMaxSize()
+                                ) {
+                                    MediaControlScreen(
+                                        ip = it,
+                                        title = osMediaMoteState.title,
+                                        position = osMediaMoteState.position,
+                                        duration = osMediaMoteState.duration,
+                                        artHash = osMediaMoteState.artHash,
+                                        isPlaying = osMediaMoteState.isPlaying,
+                                        drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.75f)
+                                            .fillMaxHeight()
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    AboutUI() { osMediaMoteViewModel.setAboutScreen(false) }
+                    this.onBackPressedDispatcher.addCallback {
+                        if (osMediaMoteViewModel.osMediaMoteState.value.aboutScreen) {
+                            this@addCallback.remove()
+                            osMediaMoteViewModel.setAboutScreen(false)
                         }
                     }
                 }

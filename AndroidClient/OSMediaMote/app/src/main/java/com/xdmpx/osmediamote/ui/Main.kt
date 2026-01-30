@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.coroutineScope
 import com.xdmpx.osmediamote.OSMediaMote
 import com.xdmpx.osmediamote.R
 
@@ -49,12 +48,15 @@ object Main {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TopAppBar(
+        onAboutClick: () -> Unit
     ) {
         androidx.compose.material3.TopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             titleContentColor = MaterialTheme.colorScheme.primary,
-        ), title = { Text(stringResource(R.string.app_name)) }, actions = {})
+        ),
+            title = { Text(stringResource(R.string.app_name)) },
+            actions = { Button(onClick = onAboutClick) { Text("About") } })
     }
 
 }

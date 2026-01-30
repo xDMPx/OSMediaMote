@@ -1,6 +1,19 @@
 <resources>
     <string name="app_name">OSMediaMote</string>
+    <string name="about_screen">About</string>
+
     <string name="error_connection_failed">Connection failed</string>
     <string name="ip">IP</string>
     <string name="confirm">Confirm</string>
+
+    <string name="about_app_description">Remotely control system media playback and retrieve playback metadata.</string>
+    <string name="about_version">Version</string>
+    <string name="about_source_code">Source code</string>
+    <string name="about_author">Author</string>
+    <string name="about_license">License</string>
+    <string name="about_author_name">xDMPx</string>
+    <string name="about_license_name">MIT</string>
+    <string name="about_source_code_url">https://github.com/xDMPx/OSMediaMote</string>
+    <string name="about_license_url">"https://github.com/xDMPx/OSMediaMote/blob/main/LICENSE"</string>
+    <string name="about_author_url">https://github.com/xDMPx</string>
 </resources>
