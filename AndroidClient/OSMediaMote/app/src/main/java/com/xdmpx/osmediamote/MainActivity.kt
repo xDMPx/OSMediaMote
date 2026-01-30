@@ -52,6 +52,8 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.xdmpx.osmediamote.ui.Main.IpInputScreen
+import com.xdmpx.osmediamote.ui.Main.TopAppBar
 import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
 import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
@@ -96,6 +98,13 @@ class MainActivity : ComponentActivity() {
                         if (osMediaMoteState.pingState == 0) {
                             IpInputScreen(
                                 osMediaMoteState.ipText,
+                                onClick = { ipText ->
+                                    osMediaMoteViewModel.setIp(ipText)
+                                    osMediaMoteViewModel.setPingState(1)
+                                    pingServer(ipText)
+                                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                },
+                                osMediaMoteViewModel = osMediaMoteViewModel,
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
@@ -104,6 +113,13 @@ class MainActivity : ComponentActivity() {
                         if (osMediaMoteState.pingState == 1) {
                             IpInputScreen(
                                 osMediaMoteState.ipText,
+                                onClick = { ipText ->
+                                    osMediaMoteViewModel.setIp(ipText)
+                                    osMediaMoteViewModel.setPingState(1)
+                                    pingServer(ipText)
+                                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                },
+                                osMediaMoteViewModel = osMediaMoteViewModel,
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
@@ -177,29 +193,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    private fun IpInputScreen(ipText: String, modifier: Modifier = Modifier) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-        ) {
-            TextField(
-                value = ipText,
-                onValueChange = { osMediaMoteViewModel.setIpText(it) },
-                label = { Text(stringResource(R.string.ip)) })
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                {
-                    osMediaMoteViewModel.setIp(ipText)
-                    osMediaMoteViewModel.setPingState(1)
-                    pingServer(ipText)
-                    this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
-                }, modifier = Modifier.fillMaxWidth(0.5f)
-            ) { Text(stringResource(R.string.confirm)) }
-        }
-
-    }
 
     @Composable
     private fun MediaControlScreen(
@@ -285,17 +278,6 @@ class MainActivity : ComponentActivity() {
 
         }
 
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun TopAppBar(
-    ) {
-        androidx.compose.material3.TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.primary,
-        ), title = { Text(stringResource(R.string.app_name)) }, actions = {})
     }
 
     private fun scheduleTimer() {
