@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = { ipText ->
                                         osMediaMoteViewModel.setIp(ipText)
                                         osMediaMoteViewModel.setPingState(1)
-                                        pingServer(ipText)
+                                        pingServer(ipText, this@MainActivity)
                                         this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                                     },
                                     osMediaMoteViewModel = osMediaMoteViewModel,
@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = { ipText ->
                                         osMediaMoteViewModel.setIp(ipText)
                                         osMediaMoteViewModel.setPingState(1)
-                                        pingServer(ipText)
+                                        pingServer(ipText, this@MainActivity)
                                         this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                                     },
                                     osMediaMoteViewModel = osMediaMoteViewModel,
@@ -190,9 +190,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchData(ip: String) {
-        fetchTitle(ip)
-        fetchIsPlaying(ip)
-        fetchDuration(ip)
+        fetchTitle(ip, this@MainActivity)
+        fetchIsPlaying(ip, this@MainActivity)
+        fetchDuration(ip, this@MainActivity)
     }
 
     private suspend fun saveLastConnectedIPValue() {
@@ -255,14 +255,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
             Row {
-                IconButton(onClick = { requestPlayPrev(ip) }, modifier = iconModifier) {
+                IconButton(
+                    onClick = { requestPlayPrev(ip, this@MainActivity) }, modifier = iconModifier
+                ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_previous_24),
                         contentDescription = null,
                         modifier = iconModifier
                     )
                 }
-                IconButton(onClick = { requestPlayPause(ip) }, modifier = iconModifier) {
+                IconButton(
+                    onClick = { requestPlayPause(ip, this@MainActivity) }, modifier = iconModifier
+                ) {
                     if (isPlaying) {
                         Icon(
                             painterResource(R.drawable.round_pause_24),
@@ -277,7 +281,9 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-                IconButton(onClick = { requestPlayNext(ip) }, modifier = iconModifier) {
+                IconButton(
+                    onClick = { requestPlayNext(ip, this@MainActivity) }, modifier = iconModifier
+                ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_next_24),
                         contentDescription = null,
@@ -303,10 +309,9 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun pingServer(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun pingServer(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/ping"
-
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             osMediaMoteViewModel.setPingState(2)
@@ -322,8 +327,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchTitle(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun fetchTitle(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/title"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -337,8 +342,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchDuration(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun fetchDuration(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/duration"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -348,8 +353,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchPosition(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun fetchPosition(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/position"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -359,22 +364,22 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchIsPlaying(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun fetchIsPlaying(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/is_playing"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             osMediaMoteViewModel.setIsPlaying(response.toString() == "true")
             if (osMediaMoteViewModel.osMediaMoteState.value.isPlaying) {
-                fetchPosition(ip)
+                fetchPosition(ip, context)
             }
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 
         volleyQueue.add(stringRequest)
     }
 
-    private fun requestPause(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun requestPause(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/pause"
 
         val stringRequest = StringRequest(
@@ -386,8 +391,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun requestPlay(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun requestPlay(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/play"
 
         val stringRequest = StringRequest(
@@ -399,8 +404,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun requestPlayPause(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun requestPlayPause(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/play_pause"
 
         val stringRequest = StringRequest(
@@ -412,8 +417,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun requestPlayNext(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun requestPlayNext(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/play_next"
 
         val stringRequest = StringRequest(
@@ -425,8 +430,8 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun requestPlayPrev(ip: String) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
+    private fun requestPlayPrev(ip: String, context: Context) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/play_prev"
 
         val stringRequest = StringRequest(
