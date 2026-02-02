@@ -55,6 +55,7 @@ import com.xdmpx.osmediamote.ui.Main.TopAppBar
 import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
 import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
+import com.xdmpx.osmediamote.utils.VolleyRequestQueue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -66,13 +67,11 @@ import java.util.TimerTask
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "osmediamote_store")
 
 class MainActivity : ComponentActivity() {
-    private lateinit var volleyQueue: RequestQueue
     private var updateTimer: Timer? = null
     private val osMediaMoteViewModel by viewModels<OSMediaMote>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        volleyQueue = Volley.newRequestQueue(this)
 
         val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
         val lastConnectedIPValue: Flow<String> = this.dataStore.data.catch {}.map { preferences ->
@@ -305,7 +304,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun pingServer(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/ping"
+
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             osMediaMoteViewModel.setPingState(2)
@@ -322,6 +323,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchTitle(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/title"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -336,6 +338,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchDuration(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/duration"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -346,6 +349,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchPosition(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/position"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -356,6 +360,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchIsPlaying(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/is_playing"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
@@ -369,6 +374,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPause(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/pause"
 
         val stringRequest = StringRequest(
@@ -381,6 +387,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPlay(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/play"
 
         val stringRequest = StringRequest(
@@ -393,6 +400,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPlayPause(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/play_pause"
 
         val stringRequest = StringRequest(
@@ -405,6 +413,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPlayNext(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/play_next"
 
         val stringRequest = StringRequest(
@@ -417,6 +426,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestPlayPrev(ip: String) {
+        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(this@MainActivity)
         val url = "http://${ip}:65420/play_prev"
 
         val stringRequest = StringRequest(
