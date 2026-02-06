@@ -15,7 +15,7 @@ data class OSMediaMoteState(
     val isPlaying: Boolean = false,
     val artHash: Int = 0,
     val drawFallbackIcon: Boolean = false,
-    val pingState: Int = 0,
+    val displayProgressIndicator: Boolean = false,
 )
 
 class OSMediaMote : ViewModel() {
@@ -58,9 +58,9 @@ class OSMediaMote : ViewModel() {
         }
     }
 
-    fun setPingState(state: Int) {
+    fun setDisplayProgressIndicator(display: Boolean) {
         _osMediaMoteState.value.let {
-            _osMediaMoteState.value = it.copy(pingState = state)
+            _osMediaMoteState.value = it.copy(displayProgressIndicator = display)
         }
     }
 

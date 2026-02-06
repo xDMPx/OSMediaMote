@@ -115,8 +115,8 @@ class MainActivity : ComponentActivity() {
                                 IpInputScreen(
                                     osMediaMoteState.ipText,
                                     onClick = { ipText ->
+                                        osMediaMoteViewModel.setDisplayProgressIndicator(true)
                                         osMediaMoteViewModel.setIp(ipText)
-                                        osMediaMoteViewModel.setPingState(1)
                                         pingServer(ipText, this@MainActivity)
                                         this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                                     },
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                         .padding(innerPadding)
                                         .fillMaxSize()
                                 )
-                                if (osMediaMoteState.pingState == 1) {
+                                if (osMediaMoteState.displayProgressIndicator) {
                                     Box(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
@@ -143,6 +143,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("media_control_screen") {
                             val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                            osMediaMoteViewModel.setDisplayProgressIndicator(false)
                             Scaffold(
                                 topBar = {
                                     TopAppBar() {
@@ -323,11 +324,10 @@ class MainActivity : ComponentActivity() {
         val url = "http://${ip}:65420/ping"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            osMediaMoteViewModel.setPingState(2)
             this@MainActivity.navController.navigate("media_control_screen")
         }, { err ->
             Log.e("VolleyError:", "$url -> $err")
-            osMediaMoteViewModel.setPingState(0)
+            osMediaMoteViewModel.setDisplayProgressIndicator(false)
             Toast.makeText(
                 this@MainActivity, getString(R.string.error_connection_failed), Toast.LENGTH_SHORT
             ).show()
