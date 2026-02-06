@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("about") {
                             AboutUI() {
-                                navController.navigate("main")
+                                navController.popBackStack()
                             }
                         }
                     }
