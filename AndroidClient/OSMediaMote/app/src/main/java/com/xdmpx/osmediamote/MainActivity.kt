@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,9 +45,11 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.savedstate.SavedState
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
@@ -106,6 +109,9 @@ class MainActivity : ComponentActivity() {
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
                                 val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                                LaunchedEffect(osMediaMoteViewModel) {
+                                    cancelTimer()
+                                }
                                 IpInputScreen(
                                     osMediaMoteState.ipText,
                                     onClick = { ipText ->
@@ -114,8 +120,11 @@ class MainActivity : ComponentActivity() {
                                         MediaControlRequester.pingServer(
                                             ipText, this@MainActivity
                                         ) { success ->
-                                            if (success) this@MainActivity.navController.navigate("media_control_screen")
-                                            else {
+                                            if (success) {
+                                                this@MainActivity.navController.navigate("media_control_screen")
+                                                scheduleTimer()
+                                            } else {
+                                                cancelTimer()
                                                 osMediaMoteViewModel.setDisplayProgressIndicator(
                                                     false
                                                 )
@@ -161,7 +170,6 @@ class MainActivity : ComponentActivity() {
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
                                 osMediaMoteState.ip?.let {
-                                    scheduleTimer()
                                     Box(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
@@ -197,13 +205,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        updateTimer?.cancel()
+        cancelTimer()
     }
 
     override fun onResume() {
         super.onResume()
-        osMediaMoteViewModel.osMediaMoteState.value.ip.let {
-            updateTimer?.cancel()
+        osMediaMoteViewModel.osMediaMoteState.value.ip?.let {
+            cancelTimer()
             scheduleTimer()
         }
     }
@@ -315,7 +323,12 @@ class MainActivity : ComponentActivity() {
 
     }
 
+    private fun cancelTimer() {
+        updateTimer?.cancel()
+    }
+
     private fun scheduleTimer() {
+        updateTimer?.cancel()
         updateTimer = Timer()
         updateTimer?.schedule(
             object : TimerTask() {
