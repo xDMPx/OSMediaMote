@@ -45,14 +45,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.savedstate.SavedState
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.StringRequest
 import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
@@ -60,7 +55,6 @@ import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
 import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
 import com.xdmpx.osmediamote.utils.MediaControlRequester
-import com.xdmpx.osmediamote.utils.VolleyRequestQueue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -165,7 +159,7 @@ class MainActivity : ComponentActivity() {
                             Scaffold(
                                 topBar = {
                                     TopAppBar() {
-                                        navController.navigate("about")
+
                                     }
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
@@ -230,7 +224,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @Composable
     private fun MediaControlScreen(
         ip: String,
@@ -283,7 +276,8 @@ class MainActivity : ComponentActivity() {
             }
             Row {
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayPrev(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayPrev(ip, this@MainActivity) },
+                    modifier = iconModifier
                 ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_previous_24),
@@ -292,7 +286,8 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayPause(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayPause(ip, this@MainActivity) },
+                    modifier = iconModifier
                 ) {
                     if (isPlaying) {
                         Icon(
@@ -309,7 +304,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayNext(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayNext(ip, this@MainActivity) },
+                    modifier = iconModifier
                 ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_next_24),
