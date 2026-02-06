@@ -1,12 +1,10 @@
 package com.xdmpx.osmediamote
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -30,10 +28,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,21 +44,19 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.findNavController
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
 import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
 import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
 import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
+import com.xdmpx.osmediamote.utils.MediaControlRequester
 import com.xdmpx.osmediamote.utils.VolleyRequestQueue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -117,7 +111,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = { ipText ->
                                         osMediaMoteViewModel.setDisplayProgressIndicator(true)
                                         osMediaMoteViewModel.setIp(ipText)
-                                        pingServer(
+                                        MediaControlRequester.pingServer(
                                             ipText, this@MainActivity
                                         ) { success ->
                                             if (success) this@MainActivity.navController.navigate("media_control_screen")
@@ -215,9 +209,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchData(ip: String) {
-        fetchTitle(ip, this@MainActivity, osMediaMoteViewModel)
-        fetchIsPlaying(ip, this@MainActivity, osMediaMoteViewModel)
-        fetchDuration(ip, this@MainActivity, osMediaMoteViewModel)
+        MediaControlRequester.fetchTitle(ip, this@MainActivity, osMediaMoteViewModel)
+        MediaControlRequester.fetchIsPlaying(ip, this@MainActivity, osMediaMoteViewModel)
+        MediaControlRequester.fetchDuration(ip, this@MainActivity, osMediaMoteViewModel)
     }
 
     private suspend fun saveLastConnectedIPValue() {
@@ -281,7 +275,7 @@ class MainActivity : ComponentActivity() {
             }
             Row {
                 IconButton(
-                    onClick = { requestPlayPrev(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayPrev(ip, this@MainActivity) }, modifier = iconModifier
                 ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_previous_24),
@@ -290,7 +284,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 IconButton(
-                    onClick = { requestPlayPause(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayPause(ip, this@MainActivity) }, modifier = iconModifier
                 ) {
                     if (isPlaying) {
                         Icon(
@@ -307,7 +301,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 IconButton(
-                    onClick = { requestPlayNext(ip, this@MainActivity) }, modifier = iconModifier
+                    onClick = { MediaControlRequester.requestPlayNext(ip, this@MainActivity) }, modifier = iconModifier
                 ) {
                     Icon(
                         painterResource(R.drawable.rounded_skip_next_24),
@@ -332,138 +326,6 @@ class MainActivity : ComponentActivity() {
                 }
             }, 0, 500
         )
-    }
-
-    private fun pingServer(
-        ip: String, context: Context, onResult: (success: Boolean) -> Unit
-    ) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/ping"
-
-        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            onResult(true)
-        }, { err ->
-            Log.e("VolleyError:", "$url -> $err")
-            onResult(false)
-        })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun fetchTitle(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/title"
-
-        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            if (osMediaMoteViewModel.osMediaMoteState.value.title != response.toString()) {
-                osMediaMoteViewModel.incrementArtHash()
-                osMediaMoteViewModel.setDrawFallbackIcon(false)
-            }
-            osMediaMoteViewModel.setTitle(response.toString())
-        }, { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun fetchDuration(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/duration"
-
-        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            osMediaMoteViewModel.setDuration(response.toString())
-        }, { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun fetchPosition(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/position"
-
-        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            osMediaMoteViewModel.setPosition(response.toString())
-        }, { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun fetchIsPlaying(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/is_playing"
-
-        val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            osMediaMoteViewModel.setIsPlaying(response.toString() == "true")
-            if (osMediaMoteViewModel.osMediaMoteState.value.isPlaying) {
-                fetchPosition(ip, context, osMediaMoteViewModel)
-            }
-        }, { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun requestPause(ip: String, context: Context) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/pause"
-
-        val stringRequest = StringRequest(
-            Request.Method.GET,
-            url,
-            { _ -> },
-            { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun requestPlay(ip: String, context: Context) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/play"
-
-        val stringRequest = StringRequest(
-            Request.Method.GET,
-            url,
-            { _ -> },
-            { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun requestPlayPause(ip: String, context: Context) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/play_pause"
-
-        val stringRequest = StringRequest(
-            Request.Method.GET,
-            url,
-            { _ -> },
-            { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun requestPlayNext(ip: String, context: Context) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/play_next"
-
-        val stringRequest = StringRequest(
-            Request.Method.GET,
-            url,
-            { _ -> },
-            { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
-    }
-
-    private fun requestPlayPrev(ip: String, context: Context) {
-        val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
-        val url = "http://${ip}:65420/play_prev"
-
-        val stringRequest = StringRequest(
-            Request.Method.GET,
-            url,
-            { _ -> },
-            { err -> Log.e("VolleyError:", "$url -> $err") })
-
-        volleyQueue.add(stringRequest)
     }
 
     private fun secsToHMS(seconds: Long): String {
