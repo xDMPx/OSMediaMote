@@ -117,7 +117,22 @@ class MainActivity : ComponentActivity() {
                                     onClick = { ipText ->
                                         osMediaMoteViewModel.setDisplayProgressIndicator(true)
                                         osMediaMoteViewModel.setIp(ipText)
-                                        pingServer(ipText, this@MainActivity)
+                                        pingServer(
+                                            ipText, this@MainActivity
+                                        ) { success ->
+                                            if (success) this@MainActivity.navController.navigate("media_control_screen")
+                                            else {
+                                                osMediaMoteViewModel.setDisplayProgressIndicator(
+                                                    false
+                                                )
+                                                Toast.makeText(
+                                                    this@MainActivity,
+                                                    getString(R.string.error_connection_failed),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                osMediaMoteViewModel.setIpText(ipText)
+                                            }
+                                        }
                                         this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                                     },
                                     osMediaMoteViewModel = osMediaMoteViewModel,
@@ -200,9 +215,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchData(ip: String) {
-        fetchTitle(ip, this@MainActivity)
-        fetchIsPlaying(ip, this@MainActivity)
-        fetchDuration(ip, this@MainActivity)
+        fetchTitle(ip, this@MainActivity, osMediaMoteViewModel)
+        fetchIsPlaying(ip, this@MainActivity, osMediaMoteViewModel)
+        fetchDuration(ip, this@MainActivity, osMediaMoteViewModel)
     }
 
     private suspend fun saveLastConnectedIPValue() {
@@ -319,25 +334,23 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun pingServer(ip: String, context: Context) {
+    private fun pingServer(
+        ip: String, context: Context, onResult: (success: Boolean) -> Unit
+    ) {
         val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/ping"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
-            this@MainActivity.navController.navigate("media_control_screen")
+            onResult(true)
         }, { err ->
             Log.e("VolleyError:", "$url -> $err")
-            osMediaMoteViewModel.setDisplayProgressIndicator(false)
-            Toast.makeText(
-                this@MainActivity, getString(R.string.error_connection_failed), Toast.LENGTH_SHORT
-            ).show()
-            osMediaMoteViewModel.setIpText(ip)
+            onResult(false)
         })
 
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchTitle(ip: String, context: Context) {
+    private fun fetchTitle(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
         val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/title"
 
@@ -352,7 +365,7 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchDuration(ip: String, context: Context) {
+    private fun fetchDuration(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
         val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/duration"
 
@@ -363,7 +376,7 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchPosition(ip: String, context: Context) {
+    private fun fetchPosition(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
         val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/position"
 
@@ -374,14 +387,14 @@ class MainActivity : ComponentActivity() {
         volleyQueue.add(stringRequest)
     }
 
-    private fun fetchIsPlaying(ip: String, context: Context) {
+    private fun fetchIsPlaying(ip: String, context: Context, osMediaMoteViewModel: OSMediaMote) {
         val volleyQueue: RequestQueue = VolleyRequestQueue.getInstance(context)
         val url = "http://${ip}:65420/is_playing"
 
         val stringRequest = StringRequest(Request.Method.GET, url, { response ->
             osMediaMoteViewModel.setIsPlaying(response.toString() == "true")
             if (osMediaMoteViewModel.osMediaMoteState.value.isPlaying) {
-                fetchPosition(ip, context)
+                fetchPosition(ip, context, osMediaMoteViewModel)
             }
         }, { err -> Log.e("VolleyError:", "$url -> $err") })
 
