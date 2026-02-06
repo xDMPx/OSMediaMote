@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -45,6 +46,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.coroutineScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
@@ -87,88 +91,94 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OSMediaMoteTheme {
-                val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
-                Log.d("MainScreen", "Update")
-                if (!osMediaMoteState.aboutScreen) {
-                    Scaffold(
-                        topBar = { TopAppBar() { osMediaMoteViewModel.setAboutScreen(true) } },
-                        modifier = Modifier.fillMaxSize()
-                    ) { innerPadding ->
-                        val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
-                        if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
-                            if (osMediaMoteState.pingState == 0) {
-                                IpInputScreen(
-                                    osMediaMoteState.ipText,
-                                    onClick = { ipText ->
-                                        osMediaMoteViewModel.setIp(ipText)
-                                        osMediaMoteViewModel.setPingState(1)
-                                        pingServer(ipText, this@MainActivity)
-                                        this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
-                                    },
-                                    osMediaMoteViewModel = osMediaMoteViewModel,
-                                    modifier = Modifier
-                                        .padding(innerPadding)
-                                        .fillMaxSize()
-                                )
-                            }
-                            if (osMediaMoteState.pingState == 1) {
-                                IpInputScreen(
-                                    osMediaMoteState.ipText,
-                                    onClick = { ipText ->
-                                        osMediaMoteViewModel.setIp(ipText)
-                                        osMediaMoteViewModel.setPingState(1)
-                                        pingServer(ipText, this@MainActivity)
-                                        this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
-                                    },
-                                    osMediaMoteViewModel = osMediaMoteViewModel,
-                                    modifier = Modifier
-                                        .padding(innerPadding)
-                                        .fillMaxSize()
-                                )
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(color = Color(0x7FA8A8A8))
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.width(64.dp),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    )
-                                }
-                            }
-                        } else {
-                            osMediaMoteState.ip?.let {
-                                scheduleTimer()
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .padding(innerPadding)
-                                        .fillMaxSize()
-                                ) {
-                                    MediaControlScreen(
-                                        ip = it,
-                                        title = osMediaMoteState.title,
-                                        position = osMediaMoteState.position,
-                                        duration = osMediaMoteState.duration,
-                                        artHash = osMediaMoteState.artHash,
-                                        isPlaying = osMediaMoteState.isPlaying,
-                                        drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
-                                        modifier = Modifier
-                                            .fillMaxWidth(0.75f)
-                                            .fillMaxHeight()
-                                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "main") {
+                        composable("main") {
+                            Log.d("MainScreen", "Update")
+                            Scaffold(
+                                topBar = {
+                                    TopAppBar() {
+                                        navController.navigate("about")
+                                    }
+                                }, modifier = Modifier.fillMaxSize()
+                            ) { innerPadding ->
+                                val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
+                                if (osMediaMoteState.ip == null || osMediaMoteState.pingState != 2) {
+                                    if (osMediaMoteState.pingState == 0) {
+                                        IpInputScreen(
+                                            osMediaMoteState.ipText,
+                                            onClick = { ipText ->
+                                                osMediaMoteViewModel.setIp(ipText)
+                                                osMediaMoteViewModel.setPingState(1)
+                                                pingServer(ipText, this@MainActivity)
+                                                this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                            },
+                                            osMediaMoteViewModel = osMediaMoteViewModel,
+                                            modifier = Modifier
+                                                .padding(innerPadding)
+                                                .fillMaxSize()
+                                        )
+                                    }
+                                    if (osMediaMoteState.pingState == 1) {
+                                        IpInputScreen(
+                                            osMediaMoteState.ipText,
+                                            onClick = { ipText ->
+                                                osMediaMoteViewModel.setIp(ipText)
+                                                osMediaMoteViewModel.setPingState(1)
+                                                pingServer(ipText, this@MainActivity)
+                                                this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
+                                            },
+                                            osMediaMoteViewModel = osMediaMoteViewModel,
+                                            modifier = Modifier
+                                                .padding(innerPadding)
+                                                .fillMaxSize()
+                                        )
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(color = Color(0x7FA8A8A8))
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.width(64.dp),
+                                                color = MaterialTheme.colorScheme.secondary,
+                                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    osMediaMoteState.ip?.let {
+                                        scheduleTimer()
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .padding(innerPadding)
+                                                .fillMaxSize()
+                                        ) {
+                                            MediaControlScreen(
+                                                ip = it,
+                                                title = osMediaMoteState.title,
+                                                position = osMediaMoteState.position,
+                                                duration = osMediaMoteState.duration,
+                                                artHash = osMediaMoteState.artHash,
+                                                isPlaying = osMediaMoteState.isPlaying,
+                                                drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
+                                                modifier = Modifier
+                                                    .fillMaxWidth(0.75f)
+                                                    .fillMaxHeight()
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    AboutUI() { osMediaMoteViewModel.setAboutScreen(false) }
-                    this.onBackPressedDispatcher.addCallback {
-                        if (osMediaMoteViewModel.osMediaMoteState.value.aboutScreen) {
-                            this@addCallback.remove()
-                            osMediaMoteViewModel.setAboutScreen(false)
+                        composable("about") {
+                            AboutUI() {
+                                navController.navigate("main")
+                            }
                         }
                     }
                 }

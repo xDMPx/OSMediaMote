@@ -16,7 +16,6 @@ data class OSMediaMoteState(
     val artHash: Int = 0,
     val drawFallbackIcon: Boolean = false,
     val pingState: Int = 0,
-    val aboutScreen: Boolean = false
 )
 
 class OSMediaMote : ViewModel() {
@@ -74,12 +73,6 @@ class OSMediaMote : ViewModel() {
     fun incrementArtHash() {
         _osMediaMoteState.value.let {
             _osMediaMoteState.value = it.copy(artHash = it.artHash + 1)
-        }
-    }
-
-    fun setAboutScreen(aboutScreen: Boolean) {
-        _osMediaMoteState.value.let {
-            _osMediaMoteState.value = it.copy(aboutScreen = aboutScreen)
         }
     }
 }
