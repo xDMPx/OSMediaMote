@@ -179,6 +179,8 @@ class MainActivity : ComponentActivity() {
                                             artHash = osMediaMoteState.artHash,
                                             isPlaying = osMediaMoteState.isPlaying,
                                             drawFallbackIcon = osMediaMoteState.drawFallbackIcon,
+                                            osMediaMoteViewModel = osMediaMoteViewModel,
+                                            context = this@MainActivity,
                                             modifier = Modifier
                                                 .fillMaxWidth(0.75f)
                                                 .fillMaxHeight()
@@ -226,7 +228,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun MediaControlScreen(
+    fun MediaControlScreen(
         ip: String,
         artHash: Int,
         title: String,
@@ -234,6 +236,8 @@ class MainActivity : ComponentActivity() {
         duration: String,
         drawFallbackIcon: Boolean,
         isPlaying: Boolean,
+        osMediaMoteViewModel: OSMediaMote,
+        context: Context,
         modifier: Modifier = Modifier
     ) {
         Column(
@@ -277,7 +281,7 @@ class MainActivity : ComponentActivity() {
             }
             Row {
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayPrev(ip, this@MainActivity) },
+                    onClick = { MediaControlRequester.requestPlayPrev(ip, context) },
                     modifier = iconModifier
                 ) {
                     Icon(
@@ -287,7 +291,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayPause(ip, this@MainActivity) },
+                    onClick = { MediaControlRequester.requestPlayPause(ip, context) },
                     modifier = iconModifier
                 ) {
                     if (isPlaying) {
@@ -305,7 +309,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 IconButton(
-                    onClick = { MediaControlRequester.requestPlayNext(ip, this@MainActivity) },
+                    onClick = { MediaControlRequester.requestPlayNext(ip, context) },
                     modifier = iconModifier
                 ) {
                     Icon(
