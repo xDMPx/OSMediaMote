@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.xdmpx.osmediamote.OSMediaMote
@@ -35,8 +36,11 @@ object Main {
         ipText: String,
         osMediaMoteViewModel: OSMediaMote,
         onClick: (ipText: String) -> Unit,
+        enabled: Boolean,
         modifier: Modifier = Modifier
     ) {
+        val focusManager = LocalFocusManager.current
+
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -45,12 +49,15 @@ object Main {
             TextField(
                 value = ipText,
                 onValueChange = { osMediaMoteViewModel.setIpText(it) },
-                label = { Text(stringResource(R.string.ip)) })
+                label = { Text(stringResource(R.string.ip)) },
+                enabled = enabled
+            )
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 {
+                    focusManager.clearFocus()
                     onClick(ipText)
-                }, modifier = Modifier.fillMaxWidth(0.5f)
+                }, enabled = enabled, modifier = Modifier.fillMaxWidth(0.5f)
             ) { Text(stringResource(R.string.confirm)) }
         }
     }

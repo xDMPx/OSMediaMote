@@ -133,6 +133,7 @@ class MainActivity : ComponentActivity() {
                                         this@MainActivity.lifecycle.coroutineScope.launch { saveLastConnectedIPValue() }
                                     },
                                     osMediaMoteViewModel = osMediaMoteViewModel,
+                                    enabled = !osMediaMoteState.displayProgressIndicator,
                                     modifier = Modifier
                                         .padding(innerPadding)
                                         .fillMaxSize()
