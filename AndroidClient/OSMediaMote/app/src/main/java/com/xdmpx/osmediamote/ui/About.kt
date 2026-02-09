@@ -147,7 +147,7 @@ object About {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AppIcon()
                     Text(
-                        text = context.getString(context.applicationInfo.labelRes),
+                        text = stringResource(context.applicationInfo.labelRes),
                         fontWeight = FontWeight.W500
                     )
                 }
@@ -163,7 +163,7 @@ object About {
         Box(contentAlignment = Alignment.Center, modifier = modifier) {
             Image(
                 drawable.toBitmap(config = Bitmap.Config.ARGB_8888).asImageBitmap(),
-                contentDescription = "App Icon",
+                contentDescription = stringResource(R.string.about_icon_description),
                 modifier = Modifier
                     .size(75.dp)
                     .padding(8.dp)
@@ -211,11 +211,17 @@ object About {
     private fun copyVersionToClipboard(context: Context) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip: ClipData = ClipData.newPlainText(
-            "${context.getString(context.applicationInfo.labelRes)} Version",
+            "${context.getString(context.applicationInfo.labelRes)} ${
+                getString(
+                    context, R.string.about_version
+                )
+            }",
             "${context.getString(context.applicationInfo.labelRes)} v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
         )
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context, getString(context, R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT
+        ).show()
     }
 
 }

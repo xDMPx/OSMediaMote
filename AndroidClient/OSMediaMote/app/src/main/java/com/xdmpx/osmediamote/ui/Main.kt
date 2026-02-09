@@ -31,6 +31,7 @@ import com.xdmpx.osmediamote.OSMediaMote
 import com.xdmpx.osmediamote.R
 
 object Main {
+
     @Composable
     fun IpInputScreen(
         ipText: String,
@@ -84,15 +85,17 @@ object Main {
 
         IconButton(onClick = { expanded = !expanded }) {
             Icon(
-                imageVector = Icons.Filled.Menu, contentDescription = "Menu"
+                imageVector = Icons.Filled.Menu, contentDescription = stringResource(R.string.menu)
             )
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text(text = "About") }, onClick = {
-                expanded = false
-                onNavigateToAbout()
-            })
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.about_screen)) },
+                onClick = {
+                    expanded = false
+                    onNavigateToAbout()
+                })
         }
 
     }

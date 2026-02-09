@@ -5,8 +5,10 @@
     <string name="error_connection_failed">Connection failed</string>
     <string name="ip">IP</string>
     <string name="confirm">Confirm</string>
+    <string name="menu">Menu</string>
 
     <string name="about_app_description">Remotely control system media playback and retrieve playback metadata.</string>
+    <string name="about_icon_description">App Icon</string>
     <string name="about_version">Version</string>
     <string name="about_source_code">Source code</string>
     <string name="about_author">Author</string>
@@ -16,4 +18,6 @@
     <string name="about_source_code_url">https://github.com/xDMPx/OSMediaMote</string>
     <string name="about_license_url">"https://github.com/xDMPx/OSMediaMote/blob/main/LICENSE"</string>
     <string name="about_author_url">https://github.com/xDMPx</string>
+
+    <string name="toast_copied_to_clipboard">Copied to clipboard</string>
 </resources>
