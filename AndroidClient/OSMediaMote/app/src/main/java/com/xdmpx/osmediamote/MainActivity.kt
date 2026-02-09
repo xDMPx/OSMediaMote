@@ -55,6 +55,7 @@ import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
 import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
 import com.xdmpx.osmediamote.utils.MediaControlRequester
+import com.xdmpx.osmediamote.utils.Utils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -261,8 +262,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
             Text(title)
-            val positionInHMS = position.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
-            val durationInHMS = duration.toFloatOrNull()?.let { secsToHMS(it.toLong()) }.orEmpty()
+            val positionInHMS =
+                position.toFloatOrNull()?.let { Utils.secsToHMS(it.toLong()) }.orEmpty()
+            val durationInHMS =
+                duration.toFloatOrNull()?.let { Utils.secsToHMS(it.toLong()) }.orEmpty()
             Column {
                 position.toFloatOrNull()?.let { pos ->
                     duration.toFloatOrNull()?.let {
@@ -341,13 +344,4 @@ class MainActivity : ComponentActivity() {
             }, 0, 500
         )
     }
-
-    private fun secsToHMS(seconds: Long): String {
-        val h = seconds / 3600
-        val m = (seconds - h * 3600) / 60
-        val s = seconds - h * 3600 - m * 60
-
-        return String.format(null, "%02d:%02d:%02d", h, m, s)
-    }
-
 }
