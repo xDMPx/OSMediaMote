@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -73,7 +74,10 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            OSMediaMoteTheme {
+            val preferences by this.dataStore.data.collectAsState(initial = null)
+            val dynamicColorKey = booleanPreferencesKey("dynamic_color")
+            val dynamicColor = preferences?.get(dynamicColorKey) ?: true
+            OSMediaMoteTheme(dynamicColor = dynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
@@ -84,9 +88,13 @@ class MainActivity : ComponentActivity() {
                             Log.d("MainScreen", "Update")
                             Scaffold(
                                 topBar = {
-                                    TopAppBar() {
+                                    TopAppBar(onAboutClick = {
                                         navController.navigate("about")
-                                    }
+                                    }, {
+                                        this@MainActivity.lifecycle.coroutineScope.launch {
+                                            saveDynamicColorPreferences(!dynamicColor)
+                                        }
+                                    })
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
                                 val osMediaMoteState by osMediaMoteViewModel.osMediaMoteState.collectAsState()
@@ -146,9 +154,13 @@ class MainActivity : ComponentActivity() {
                             osMediaMoteViewModel.setDisplayProgressIndicator(false)
                             Scaffold(
                                 topBar = {
-                                    TopAppBar() {
-
-                                    }
+                                    TopAppBar(onAboutClick = {
+                                        navController.navigate("about")
+                                    }, {
+                                        this@MainActivity.lifecycle.coroutineScope.launch {
+                                            saveDynamicColorPreferences(!dynamicColor)
+                                        }
+                                    })
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
                                 osMediaMoteState.ip?.let {
@@ -211,6 +223,13 @@ class MainActivity : ComponentActivity() {
         val lastConnectedIPValueKey = stringPreferencesKey("last_connected_ip")
         this@MainActivity.dataStore.edit { preferences ->
             preferences[lastConnectedIPValueKey] = osMediaMoteViewModel.osMediaMoteState.value.ip!!
+        }
+    }
+
+    private suspend fun saveDynamicColorPreferences(dynamicColors: Boolean) {
+        val dynamicColorKey = booleanPreferencesKey("dynamic_color")
+        this@MainActivity.dataStore.edit { preferences ->
+            preferences[dynamicColorKey] = dynamicColors
         }
     }
 

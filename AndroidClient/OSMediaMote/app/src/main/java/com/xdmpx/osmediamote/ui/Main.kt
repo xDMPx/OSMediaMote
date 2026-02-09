@@ -66,7 +66,7 @@ object Main {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TopAppBar(
-        onAboutClick: () -> Unit
+        onAboutClick: () -> Unit, onDynamicColorClick: () -> Unit
     ) {
         androidx.compose.material3.TopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
@@ -74,12 +74,12 @@ object Main {
             titleContentColor = MaterialTheme.colorScheme.primary,
         ),
             title = { Text(stringResource(R.string.app_name)) },
-            actions = { TopAppBarMenu { onAboutClick() } })
+            actions = { TopAppBarMenu(onAboutClick, onDynamicColorClick) })
     }
 
     @Composable
     fun TopAppBarMenu(
-        onNavigateToAbout: () -> Unit,
+        onNavigateToAbout: () -> Unit, onDynamicColorClick: () -> Unit
     ) {
         var expanded by remember { mutableStateOf(false) }
 
@@ -96,6 +96,10 @@ object Main {
                     expanded = false
                     onNavigateToAbout()
                 })
+            DropdownMenuItem(text = { Text(text = "DynamicColor") }, onClick = {
+                expanded = false
+                onDynamicColorClick()
+            })
         }
 
     }
