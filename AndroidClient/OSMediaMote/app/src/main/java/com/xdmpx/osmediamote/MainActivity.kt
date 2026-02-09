@@ -9,35 +9,23 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -51,11 +39,9 @@ import androidx.navigation.compose.rememberNavController
 import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
-import com.xdmpx.osmediamote.ui.MediaControlScreen.ArtIcon
-import com.xdmpx.osmediamote.ui.MediaControlScreen.PositionSlider
+import com.xdmpx.osmediamote.ui.MediaControlScreen
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
 import com.xdmpx.osmediamote.utils.MediaControlRequester
-import com.xdmpx.osmediamote.utils.Utils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -172,7 +158,7 @@ class MainActivity : ComponentActivity() {
                                             .padding(innerPadding)
                                             .fillMaxSize()
                                     ) {
-                                        MediaControlScreen(
+                                        MediaControlScreen.MediaControlScreen(
                                             ip = it,
                                             title = osMediaMoteState.title,
                                             position = osMediaMoteState.position,
@@ -226,105 +212,6 @@ class MainActivity : ComponentActivity() {
         this@MainActivity.dataStore.edit { preferences ->
             preferences[lastConnectedIPValueKey] = osMediaMoteViewModel.osMediaMoteState.value.ip!!
         }
-    }
-
-    @Composable
-    fun MediaControlScreen(
-        ip: String,
-        artHash: Int,
-        title: String,
-        position: String,
-        duration: String,
-        drawFallbackIcon: Boolean,
-        isPlaying: Boolean,
-        osMediaMoteViewModel: OSMediaMote,
-        context: Context,
-        modifier: Modifier = Modifier
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-        ) {
-            val iconModifier = Modifier.size(75.dp)
-
-            Box(
-                contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
-            ) {
-                if (!drawFallbackIcon) {
-                    ArtIcon(ip, artHash, osMediaMoteViewModel)
-                } else {
-                    Icon(
-                        painterResource(R.drawable.rounded_music_video_24),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-            Text(title)
-            val positionInHMS =
-                position.toFloatOrNull()?.let { Utils.secsToHMS(it.toLong()) }.orEmpty()
-            val durationInHMS =
-                duration.toFloatOrNull()?.let { Utils.secsToHMS(it.toLong()) }.orEmpty()
-            Column {
-                position.toFloatOrNull()?.let { pos ->
-                    duration.toFloatOrNull()?.let {
-                        PositionSlider(pos, it)
-                    }
-                }
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(text = positionInHMS, fontSize = 12.sp)
-                    Text(
-                        durationInHMS,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-            Row {
-                IconButton(
-                    onClick = { MediaControlRequester.requestPlayPrev(ip, context) },
-                    modifier = iconModifier
-                ) {
-                    Icon(
-                        painterResource(R.drawable.rounded_skip_previous_24),
-                        contentDescription = null,
-                        modifier = iconModifier
-                    )
-                }
-                IconButton(
-                    onClick = { MediaControlRequester.requestPlayPause(ip, context) },
-                    modifier = iconModifier
-                ) {
-                    if (isPlaying) {
-                        Icon(
-                            painterResource(R.drawable.round_pause_24),
-                            contentDescription = null,
-                            modifier = iconModifier,
-                        )
-                    } else {
-                        Icon(
-                            painterResource(R.drawable.round_play_arrow_24),
-                            contentDescription = null,
-                            modifier = iconModifier,
-                        )
-                    }
-                }
-                IconButton(
-                    onClick = { MediaControlRequester.requestPlayNext(ip, context) },
-                    modifier = iconModifier
-                ) {
-                    Icon(
-                        painterResource(R.drawable.rounded_skip_next_24),
-                        contentDescription = null,
-                        modifier = iconModifier
-                    )
-                }
-            }
-
-        }
-
     }
 
     private fun cancelTimer() {
