@@ -151,7 +151,7 @@ object About {
                         fontWeight = FontWeight.W500
                     )
                 }
-                AppDescription()
+                AppDescription(Modifier.padding(8.dp))
             }
         }
     }
