@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -37,6 +38,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.xdmpx.osmediamote.settings.Settings
+import com.xdmpx.osmediamote.settings.SettingsSerializer
 import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
@@ -52,6 +55,10 @@ import java.util.Timer
 import java.util.TimerTask
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "osmediamote_store")
+val Context.settingsDataStore: DataStore<Settings> by dataStore(
+    fileName = "settings.json",
+    serializer = SettingsSerializer,
+)
 
 class MainActivity : ComponentActivity() {
     private var updateTimer: Timer? = null
@@ -74,9 +81,8 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val preferences by this.dataStore.data.collectAsState(initial = null)
-            val dynamicColorKey = booleanPreferencesKey("dynamic_color")
-            val dynamicColor = preferences?.get(dynamicColorKey) ?: true
+            val settings by this@MainActivity.settingsDataStore.data.collectAsState(initial = Settings())
+            val dynamicColor = settings.useDynamicColor
             OSMediaMoteTheme(dynamicColor = dynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
@@ -92,7 +98,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("about")
                                     }, {
                                         this@MainActivity.lifecycle.coroutineScope.launch {
-                                            saveDynamicColorPreferences(!dynamicColor)
+                                            saveDynamicColorSetting(!dynamicColor)
                                         }
                                     })
                                 }, modifier = Modifier.fillMaxSize()
@@ -158,7 +164,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("about")
                                     }, {
                                         this@MainActivity.lifecycle.coroutineScope.launch {
-                                            saveDynamicColorPreferences(!dynamicColor)
+                                            saveDynamicColorSetting(!dynamicColor)
                                         }
                                     })
                                 }, modifier = Modifier.fillMaxSize()
@@ -226,10 +232,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun saveDynamicColorPreferences(dynamicColors: Boolean) {
-        val dynamicColorKey = booleanPreferencesKey("dynamic_color")
-        this@MainActivity.dataStore.edit { preferences ->
-            preferences[dynamicColorKey] = dynamicColors
+    private suspend fun saveDynamicColorSetting(dynamicColors: Boolean) {
+        this@MainActivity.settingsDataStore.updateData { settings ->
+            settings.copy(useDynamicColor = dynamicColors)
         }
     }
 
