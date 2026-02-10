@@ -36,7 +36,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.xdmpx.osmediamote.settings.SettingsViewModel
+import com.xdmpx.osmediamote.settings.Settings
 import com.xdmpx.osmediamote.ui.About.AboutUI
 import com.xdmpx.osmediamote.ui.Main.IpInputScreen
 import com.xdmpx.osmediamote.ui.Main.TopAppBar
@@ -53,12 +53,10 @@ import java.util.TimerTask
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "osmediamote_store")
 
-
 class MainActivity : ComponentActivity() {
     private var updateTimer: Timer? = null
     private val osMediaMoteViewModel by viewModels<OSMediaMote>()
-
-    private val settingsViewModel by viewModels<SettingsViewModel>()
+    private val settingsInstance = Settings.getInstance()
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,13 +71,12 @@ class MainActivity : ComponentActivity() {
             val value = lastConnectedIPValue.first()
             Log.i("MainActivity", "LastConnectedIP -> $value")
             osMediaMoteViewModel.setIpText(value)
-            settingsViewModel.loadSettings(this@MainActivity)
+            settingsInstance.loadSettings(this@MainActivity)
         }
-
 
         enableEdgeToEdge()
         setContent {
-            val settings by settingsViewModel.settingsState.collectAsState()
+            val settings by settingsInstance.settingsState.collectAsState()
             OSMediaMoteTheme(dynamicColor = settings.useDynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
@@ -95,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("about")
                                     }, {
                                         this@MainActivity.lifecycle.coroutineScope.launch {
-                                            settingsViewModel.toggleUseDynamicColor()
+                                            settingsInstance.toggleUseDynamicColor()
                                         }
                                     })
                                 }, modifier = Modifier.fillMaxSize()
@@ -161,7 +158,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("about")
                                     }, {
                                         this@MainActivity.lifecycle.coroutineScope.launch {
-                                            settingsViewModel.toggleUseDynamicColor()
+                                            settingsInstance.toggleUseDynamicColor()
                                         }
                                     })
                                 }, modifier = Modifier.fillMaxSize()
@@ -206,7 +203,7 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         cancelTimer()
         this.lifecycle.coroutineScope.launch {
-            settingsViewModel.saveSettings(this@MainActivity)
+            settingsInstance.saveSettings(this@MainActivity)
         }
     }
 
