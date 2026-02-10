@@ -1,11 +1,14 @@
 <resources>
     <string name="app_name">OSMediaMote</string>
     <string name="about_screen">About</string>
+    <string name="settings_screen">Settings</string>
 
     <string name="error_connection_failed">Connection failed</string>
     <string name="ip">IP</string>
     <string name="confirm">Confirm</string>
     <string name="menu">Menu</string>
+
+    <string name="settings_dynamic_color">Use dynamic colors in theme</string>
 
     <string name="about_app_description">Remotely control system media playback and retrieve playback metadata.</string>
     <string name="about_icon_description">App Icon</string>

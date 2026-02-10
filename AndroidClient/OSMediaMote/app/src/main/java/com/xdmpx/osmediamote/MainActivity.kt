@@ -91,9 +91,7 @@ class MainActivity : ComponentActivity() {
                                     TopAppBar(onAboutClick = {
                                         navController.navigate("about")
                                     }, {
-                                        this@MainActivity.lifecycle.coroutineScope.launch {
-                                            settingsInstance.toggleUseDynamicColor()
-                                        }
+                                        navController.navigate("settings")
                                     })
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
@@ -157,9 +155,7 @@ class MainActivity : ComponentActivity() {
                                     TopAppBar(onAboutClick = {
                                         navController.navigate("about")
                                     }, {
-                                        this@MainActivity.lifecycle.coroutineScope.launch {
-                                            settingsInstance.toggleUseDynamicColor()
-                                        }
+                                        navController.navigate("settings")
                                     })
                                 }, modifier = Modifier.fillMaxSize()
                             ) { innerPadding ->
@@ -190,6 +186,11 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("about") {
                             AboutUI() {
+                                navController.popBackStack()
+                            }
+                        }
+                        composable(route = "settings") {
+                            com.xdmpx.osmediamote.ui.Settings.SettingsScreen(settingsInstance) {
                                 navController.popBackStack()
                             }
                         }
