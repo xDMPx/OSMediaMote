@@ -91,16 +91,16 @@ object Main {
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                text = { Text(text = stringResource(id = R.string.about_screen)) },
-                onClick = {
-                    expanded = false
-                    onNavigateToAbout()
-                })
-            DropdownMenuItem(
                 text = { Text(text = stringResource(R.string.settings_screen)) },
                 onClick = {
                     expanded = false
                     onNavigateToSettings()
+                })
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.about_screen)) },
+                onClick = {
+                    expanded = false
+                    onNavigateToAbout()
                 })
         }
 
