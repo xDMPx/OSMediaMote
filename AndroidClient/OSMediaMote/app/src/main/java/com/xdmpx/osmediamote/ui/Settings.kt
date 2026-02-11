@@ -60,6 +60,16 @@ object Settings {
             ) {
                 LazyColumn(Modifier.padding(10.dp)) {
                     item {
+                        Setting(
+                            stringResource(R.string.settings_keep_screen),
+                            settingsState.keepScreenOn,
+                            icon = { modifier ->
+                                Icon(
+                                    painter = painterResource(id = R.drawable.rounded_visibility_lock_24),
+                                    contentDescription = null,
+                                    modifier = modifier
+                                )
+                            }) { settingsViewModel.toggleKeepScreenOn() }
                         ThemeSelectorSetting(
                             stringResource(R.string.settings_theme), settingsState.theme
                         ) {

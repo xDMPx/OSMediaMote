@@ -1,5 +1,6 @@
 package com.xdmpx.osmediamote
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -27,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -45,6 +47,7 @@ import com.xdmpx.osmediamote.ui.Main.TopAppBar
 import com.xdmpx.osmediamote.ui.MediaControlScreen
 import com.xdmpx.osmediamote.ui.theme.OSMediaMoteTheme
 import com.xdmpx.osmediamote.utils.MediaControlRequester
+import com.xdmpx.osmediamote.utils.Utils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -78,14 +81,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settings by settingsInstance.settingsState.collectAsState()
-
+            val view = LocalView.current
             val loadSettings = rememberSaveable { mutableStateOf(true) }
+
             LaunchedEffect(loadSettings) {
                 if (loadSettings.value) {
                     loadSettings.value = false
                     Log.i("MainActivity", "Setting Load")
                     settingsInstance.loadSettings(this@MainActivity)
                 }
+            }
+            LaunchedEffect(settings.keepScreenOn) {
+                Log.i("MainActivity", "KeepScreenOn-> ${settings.keepScreenOn}")
+                val window = (view.context as Activity).window
+                Utils.setKeepScreenOnFlag(window, settings.keepScreenOn)
             }
 
             OSMediaMoteTheme(
