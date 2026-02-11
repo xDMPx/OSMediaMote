@@ -22,6 +22,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -71,12 +73,21 @@ class MainActivity : ComponentActivity() {
             val value = lastConnectedIPValue.first()
             Log.i("MainActivity", "LastConnectedIP -> $value")
             osMediaMoteViewModel.setIpText(value)
-            settingsInstance.loadSettings(this@MainActivity)
         }
 
         enableEdgeToEdge()
         setContent {
             val settings by settingsInstance.settingsState.collectAsState()
+
+            val loadSettings = rememberSaveable { mutableStateOf(true) }
+            LaunchedEffect(loadSettings) {
+                if (loadSettings.value) {
+                    loadSettings.value = false
+                    Log.i("MainActivity", "Setting Load")
+                    settingsInstance.loadSettings(this@MainActivity)
+                }
+            }
+
             OSMediaMoteTheme(
                 theme = settings.theme,
                 dynamicColor = settings.useDynamicColor,
