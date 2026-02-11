@@ -11,6 +11,11 @@
     <string name="settings_pure_dark">Use pure(AMOLED) dark in dark them</string>
     <string name="settings_dynamic_color">Use dynamic colors in theme</string>
 
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_light">Light</string>
+
     <string name="about_app_description">Remotely control system media playback and retrieve playback metadata.</string>
     <string name="about_icon_description">App Icon</string>
     <string name="about_version">Version</string>

@@ -78,7 +78,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settings by settingsInstance.settingsState.collectAsState()
             OSMediaMoteTheme(
-                dynamicColor = settings.useDynamicColor, pureDarkTheme = settings.usePureDark
+                theme = settings.theme,
+                dynamicColor = settings.useDynamicColor,
+                pureDarkTheme = settings.usePureDark
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
