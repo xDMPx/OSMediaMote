@@ -49,6 +49,17 @@ object Settings {
             ) {
                 LazyColumn(Modifier.padding(10.dp)) {
                     item {
+                        Setting(stringResource(R.string.settings_pure_dark),
+                            settingsState.usePureDark,
+                            icon = { modifier ->
+                                Icon(
+                                    painter = painterResource(id = R.drawable.rounded_invert_colors_24),
+                                    contentDescription = null,
+                                    modifier = modifier
+                                )
+                            }) {
+                            settingsViewModel.toggleUsePureDark()
+                        }
                         Setting(
                             stringResource(R.string.settings_dynamic_color),
                             settingsState.useDynamicColor,

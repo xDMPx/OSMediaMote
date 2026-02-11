@@ -8,6 +8,7 @@
     <string name="confirm">Confirm</string>
     <string name="menu">Menu</string>
 
+    <string name="settings_pure_dark">Use pure(AMOLED) dark in dark them</string>
     <string name="settings_dynamic_color">Use dynamic colors in theme</string>
 
     <string name="about_app_description">Remotely control system media playback and retrieve playback metadata.</string>

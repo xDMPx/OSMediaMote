@@ -17,6 +17,7 @@ val Context.settingsDataStore: DataStore<SettingsState> by dataStore(
 
 @Serializable
 data class SettingsState(
+    val usePureDark: Boolean = false,
     val useDynamicColor: Boolean = true,
 )
 
@@ -24,6 +25,12 @@ class SettingsViewModel : ViewModel() {
 
     private val _settingsState = MutableStateFlow(SettingsState())
     val settingsState: StateFlow<SettingsState> = _settingsState.asStateFlow()
+
+    fun toggleUsePureDark() {
+        _settingsState.value.let {
+            _settingsState.value = it.copy(usePureDark = !it.usePureDark)
+        }
+    }
 
     fun toggleUseDynamicColor() {
         _settingsState.value.let {
@@ -35,6 +42,7 @@ class SettingsViewModel : ViewModel() {
         val settingsData = context.settingsDataStore.data.first()
         _settingsState.value.let {
             _settingsState.value = it.copy(
+                usePureDark = settingsData.usePureDark,
                 useDynamicColor = settingsData.useDynamicColor,
             )
         }
@@ -43,6 +51,7 @@ class SettingsViewModel : ViewModel() {
     suspend fun saveSettings(context: Context) {
         context.settingsDataStore.updateData {
             it.copy(
+                usePureDark = this@SettingsViewModel._settingsState.value.usePureDark,
                 useDynamicColor = this@SettingsViewModel._settingsState.value.useDynamicColor
             )
         }
