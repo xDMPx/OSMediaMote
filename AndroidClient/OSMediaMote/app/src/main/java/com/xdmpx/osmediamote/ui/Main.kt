@@ -50,7 +50,8 @@ object Main {
                 value = ipText,
                 onValueChange = { osMediaMoteViewModel.setIpText(it) },
                 label = { Text(stringResource(R.string.ip)) },
-                enabled = enabled
+                enabled = enabled,
+                maxLines = 1,
             )
             Spacer(modifier = Modifier.height(10.dp))
             Button(

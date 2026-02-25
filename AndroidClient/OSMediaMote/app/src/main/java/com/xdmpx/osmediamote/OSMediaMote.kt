@@ -29,6 +29,7 @@ class OSMediaMote : ViewModel() {
     }
 
     fun setIpText(ipText: String) {
+        val ipText = ipText.trim().filter { !it.isWhitespace() }
         _osMediaMoteState.value.let {
             _osMediaMoteState.value = it.copy(ipText = ipText)
         }
