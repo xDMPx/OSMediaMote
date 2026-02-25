@@ -1,11 +1,14 @@
 package com.xdmpx.osmediamote.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,8 +56,12 @@ object MediaControlScreen {
         ) {
             val iconModifier = Modifier.size(75.dp)
 
+            val landscapeOrientation =
+                LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val thumbnailModifier =
+                if (!landscapeOrientation) Modifier.height(200.dp) else Modifier.weight(1f)
             Box(
-                contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp)
+                contentAlignment = Alignment.BottomEnd, modifier = thumbnailModifier
             ) {
                 if (!drawFallbackIcon) {
                     ArtIcon(ip, artHash, osMediaMoteViewModel)
@@ -60,7 +69,9 @@ object MediaControlScreen {
                     Icon(
                         painterResource(R.drawable.rounded_music_video_24),
                         contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .fillMaxSize()
                     )
                 }
             }
@@ -145,11 +156,7 @@ object MediaControlScreen {
         // Hash value used to circumvent the caching
         val url = "http://${ip}:65420/art?hash=${artHash}"
         Log.d("ArtIcon", url)
-        Box(
-            contentAlignment = Alignment.Center, modifier = modifier
-                .fillMaxHeight()
-                .padding(5.dp)
-        ) {
+        Box(modifier = modifier) {
             AsyncImage(
                 model = url, contentDescription = null, onError = {
                     Log.e(
