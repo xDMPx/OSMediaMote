@@ -42,20 +42,21 @@ And the server will start on port `65420`, then connect via one of the clients t
 
 ## Endpoints
 
-| Endpoint      | Method | Description                               |
-| ------------- | ------ | ----------------------------------------- |
-| `/pause`      | GET    | Pause playback.                           |
-| `/play`       | GET    | Start playback.                           |
-| `/play_pause` | GET    | Toggle play/pause.                        |
-| `/play_next`  | GET    | Skip to next track.                       |
-| `/play_prev`  | GET    | Skip to previous track.                   |
-| `/title`      | GET    | Get current track title.                  |
-| `/artist`     | GET    | Get current track artist(s).              |
-| `/art`        | GET    | Get current track artwork (image bytes).  |
-| `/duration`   | GET    | Get track duration in seconds.            |
-| `/position`   | GET    | Get current playback position in seconds. |
-| `/is_playing` | GET    | Check if media is currently playing.      |
-| `/ping`       | GET    | Health check, returns 200 OK.             |
+| Endpoint              | Method | Description                               |
+| --------------------- | ------ | ----------------------------------------- |
+| `/pause`              | GET    | Pause playback.                           |
+| `/play`               | GET    | Start playback.                           |
+| `/play_pause`         | GET    | Toggle play/pause.                        |
+| `/play_next`          | GET    | Skip to next track.                       |
+| `/play_prev`          | GET    | Skip to previous track.                   |
+| `/title`              | GET    | Get current track title.                  |
+| `/artist`             | GET    | Get current track artist(s).              |
+| `/art`                | GET    | Get current track artwork (image bytes).  |
+| `/duration`           | GET    | Get track duration in seconds.            |
+| `/position`           | GET    | Get current playback position in seconds. |
+| `/position/{pos_sec}` | PUT    | Set current playback position in seconds. |
+| `/is_playing`         | GET    | Check if media is currently playing.      |
+| `/ping`               | GET    | Health check, returns 200 OK.             |
 
 ## License
 

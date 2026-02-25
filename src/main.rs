@@ -1,4 +1,4 @@
-use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware::Logger, put, web, App, HttpResponse, HttpServer, Responder};
 use os_mediamote::media_controller;
 
 struct AppState {
@@ -24,7 +24,8 @@ async fn main() -> std::io::Result<()> {
             .service(art)
             .service(artist)
             .service(duration)
-            .service(position)
+            .service(position_get)
+            .service(position_put)
             .service(is_playing)
             .service(ping)
     })
@@ -92,11 +93,18 @@ async fn duration(data: web::Data<AppState>) -> impl Responder {
 }
 
 #[get("/position")]
-async fn position(data: web::Data<AppState>) -> impl Responder {
+async fn position_get(data: web::Data<AppState>) -> impl Responder {
     let position = data.mc.media_get_position().unwrap();
     HttpResponse::Ok()
         .content_type("text/plain; charset=utf-8")
         .body(format!("{position}"))
+}
+
+#[put("/position/{pos_sec}")]
+async fn position_put(path: web::Path<u64>, data: web::Data<AppState>) -> impl Responder {
+    let pos_sec = path.into_inner();
+    data.mc.media_set_position(pos_sec).unwrap();
+    HttpResponse::Ok()
 }
 
 #[get("/is_playing")]

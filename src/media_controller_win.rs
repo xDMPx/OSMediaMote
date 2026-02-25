@@ -154,6 +154,27 @@ impl MediaController {
         Ok(position as f32)
     }
 
+    pub fn media_set_position(&self, position: u64) -> Result<(), MediaControllerError> {
+        block_on(self._media_set_position(position))
+    }
+
+    async fn _media_set_position(&self, position: u64) -> Result<(), MediaControllerError> {
+        let session_manager =
+            Media::Control::GlobalSystemMediaTransportControlsSessionManager::RequestAsync()
+                .unwrap()
+                .await
+                .unwrap();
+        let session = session_manager.GetCurrentSession().unwrap();
+
+        let possition = position as i64;
+        session
+            .TryChangePlaybackPositionAsync(possition * 10_000_000)
+            .unwrap()
+            .await
+            .unwrap();
+        Ok(())
+    }
+
     pub fn media_is_playing(&self) -> Result<bool, MediaControllerError> {
         block_on(self._media_is_playing())
     }
