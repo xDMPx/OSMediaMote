@@ -1,4 +1,4 @@
-use osmediamote_cli::{ProgramOption, print_help, process_args, reqwest_get};
+use osmediamote_cli::{ProgramOption, print_help, process_args, reqwest_get, reqwest_put};
 
 fn main() {
     let options = process_args()
@@ -53,6 +53,10 @@ fn main() {
             }
             ProgramOption::Position => {
                 let res = reqwest_get(&format!("http://{ip}:65420/position")).unwrap();
+                println!("{}", res.text().unwrap());
+            }
+            ProgramOption::SetPosition(position) => {
+                let res = reqwest_put(&format!("http://{ip}:65420/position/{position}")).unwrap();
                 println!("{}", res.text().unwrap());
             }
             ProgramOption::Metadata => {

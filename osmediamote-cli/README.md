@@ -35,5 +35,6 @@ Commands:
 	 previous
 	 status
 	 position
+     position=[OFFSET]
 	 metadata
 ```

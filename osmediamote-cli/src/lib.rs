@@ -20,6 +20,16 @@ pub fn reqwest_get(url: &str) -> reqwest::Result<reqwest::blocking::Response> {
     Ok(response)
 }
 
+#[inline(always)]
+pub fn reqwest_put(url: &str) -> reqwest::Result<reqwest::blocking::Response> {
+    let reqwest_client = get_reqwest_client()?;
+
+    let request = reqwest_client.put(url).build()?;
+    let response = reqwest_client.execute(request)?;
+
+    Ok(response)
+}
+
 #[derive(Debug)]
 pub enum OSMediaMoteError {
     InvalidOption(String),
@@ -37,6 +47,7 @@ pub enum ProgramOption {
     Previous,
     Status,
     Position,
+    SetPosition(u64),
     Metadata,
     PrintHelp,
 }
@@ -66,6 +77,14 @@ pub fn process_args() -> Result<Vec<ProgramOption>, OSMediaMoteError> {
             "previous" => Ok(ProgramOption::Previous),
             "status" => Ok(ProgramOption::Status),
             "position" => Ok(ProgramOption::Position),
+            pos_with_sec if arg.starts_with("position=") => {
+                let sec = pos_with_sec
+                    .replace("position=", "")
+                    .trim()
+                    .parse()
+                    .map_err(|_| OSMediaMoteError::InvalidOption(arg))?;
+                Ok(ProgramOption::SetPosition(sec))
+            }
             "metadata" => Ok(ProgramOption::Metadata),
             _ => Err(OSMediaMoteError::InvalidOption(arg)),
         };
@@ -90,5 +109,6 @@ pub fn print_help() {
     println!("\t previous");
     println!("\t status");
     println!("\t position");
+    println!("\t position=[OFFSET]");
     println!("\t metadata");
 }
