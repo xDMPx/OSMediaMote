@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -25,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.xdmpx.osmediamote.OSMediaMote
@@ -85,7 +84,8 @@ object Main {
 
         IconButton(onClick = { expanded = !expanded }) {
             Icon(
-                imageVector = Icons.Filled.Menu, contentDescription = stringResource(R.string.menu)
+                painterResource(R.drawable.sharp_menu_24),
+                contentDescription = stringResource(R.string.menu)
             )
         }
 
